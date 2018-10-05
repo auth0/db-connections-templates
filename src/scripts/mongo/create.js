@@ -10,7 +10,7 @@ function create (user, callback) {
       if (withSameMail) return callback(new Error('the user already exists'));
 
       bcrypt.hash(user.password, 10, function (err, hash) {
-        if (err) { return callback(err); }
+        if (err) return callback(err);
         user.password = hash;
         users.insert(user, function (err, inserted) {
           if (err) return callback(err);
