@@ -1,0 +1,25 @@
+{
+  "name": "db-connections-templates",
+  "version": "0.1.0",
+  "description": "Auth0 Connection Scripts Repository",
+  "main": "./src/scripts",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/auth0/db-connections-templates"
+  },
+  "author": "Auth0",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/auth0/db-connections-templates/issues"
+  },
+  "homepage": "https://github.com/auth0/db-connections-templates",
+  "devDependencies": {
+    "async": "2.6.0",
+    "bcrypt": "^3.0.1",
+    "decomment": "0.9.1",
+    "jest": "21.2.1"
+  }
+}
