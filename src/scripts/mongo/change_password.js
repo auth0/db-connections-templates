@@ -6,14 +6,11 @@ function changePassword(email, newPassword, callback) {
     const users = db.collection('users');
 
     bcrypt.hash(newPassword, 10, function (err, hash) {
-      if (err) {
-        callback(err);
-      } else {
-        users.update({ email: email }, { $set: { password: hash } }, function (err, count) {
-          if (err) return callback(err);
-          callback(null, count > 0);
-        });
-      }
+      if (err) return callback(err);
+      users.update({ email: email }, { $set: { password: hash } }, function (err, count) {
+        if (err) return callback(err);
+        callback(null, count > 0);
+      });
     });
   });
 }

@@ -10,17 +10,13 @@ function login(email, password, callback) {
       if (!user) return callback(new WrongUsernameOrPasswordError(email));
 
       bcrypt.compare(password, user.password, function (err, isValid) {
-        if (err) {
-          callback(err);
-        } else if (!isValid) {
-          callback(new WrongUsernameOrPasswordError(email));
-        } else {
-          callback(null, {
+        if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
+
+        return callback(null, {
             user_id: user._id.toString(),
             nickname: user.nickname,
             email: user.email
           });
-        }
       });
     });
   });
