@@ -19,21 +19,34 @@ module.exports = function(options) {
     return self;
   };
 
-  const Request = function(query, callback) {
-    this.query = query;
-    this.addParameter = function(key, type, value) {
-      this.query = this.query.replace('@' + key, value);
+  const Request = function(query, requestCallback) {
+    const self = this;
+    self.query = query;
+    self.addParameter = function(key, type, value) {
+      self.query = self.query.replace(new RegExp('@' + key, 'g'), value);
     };
 
-    this.run = function() {
+    self.run = function() {
       if (options.callback) {
-        return options.callback(this.query, callback);
+        options.callback(this.query, requestCallback);
+      } else {
+        requestCallback();
       }
 
-      return callback();
+      if (self.rowCallback && options.row) {
+        setTimeout(function() {
+          options.row(self.rowCallback);
+        }, 100);
+      }
     };
 
-    return this;
+    self.on = function(event, rowCallback) {
+      if (event === 'row') {
+        self.rowCallback = rowCallback;
+      }
+    };
+
+    return self;
   };
 
   return {
