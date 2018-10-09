@@ -28,12 +28,12 @@ function login(email, password, callback) {
     if (err) return callback(err);
 
     getMembershipUser(email, function(err, user) {
-      if (err) return callback(err); // this will return a 500
-      if (!user || !user.profile) return callback(); // this will return a 401
+      if (err || !user || !user.profile < 1) return callback(err || new WrongUsernameOrPasswordError(email));
 
       const salt = Buffer.from(user.password.salt, 'base64');
+      const isPasswordValid = hashPassword(password, salt).toString('base64') === user.password.password;
 
-      if (hashPassword(password, salt).toString('base64') !== user.password.password) return callback(); // this will return a 401
+      if (!isPasswordValid) return callback(new WrongUsernameOrPasswordError(email)); // this will return a 401
 
       return callback(null, user.profile);
     });
@@ -55,35 +55,32 @@ function login(email, password, callback) {
    *                                    and second argument will be a user object
    */
   function getMembershipUser(usernameOrEmail, done) {
+    var user = null;
     const query =
       'SELECT Memberships.UserId, Email, Users.UserName, Password, PasswordSalt ' +
       'FROM Memberships INNER JOIN Users ' +
       'ON Users.UserId = Memberships.UserId ' +
       'WHERE Memberships.Email = @Username OR Users.UserName = @Username';
 
-    const getMembershipQuery = new Request(query, function(err, rowCount) {
-      if (err) return done(err);
-      if (rowCount < 1) return done();
+    const getMembershipQuery = new Request(query, function(err) {
+      done(err, user);
     });
 
     getMembershipQuery.addParameter('Username', TYPES.VarChar, usernameOrEmail);
 
     getMembershipQuery.on('row', function(fields) {
-      const user = {};
-
-      user.profile = {
-        user_id: fields.UserId.value,
-        nickname: fields.UserName.value,
-        name: fields.UserName.value,
-        email: fields.Email.value,
+      user = {
+        profile: {
+          user_id: fields.UserId.value,
+          nickname: fields.UserName.value,
+          name: fields.UserName.value,
+          email: fields.Email.value,
+        },
+        password: {
+          password: fields.Password.value,
+          salt: fields.PasswordSalt.value
+        }
       };
-
-      user.password = {
-        password: fields.Password.value,
-        salt: fields.PasswordSalt.value
-      };
-
-      return done(null, user);
     });
 
     connection.execSql(getMembershipQuery);

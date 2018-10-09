@@ -28,12 +28,11 @@ function getByEmail (email, callback) {
 
     var user = {};
     const query =
-      'SELECT Memberships.UserId, Email, Users.UserName ' +
-      'FROM Memberships INNER JOIN Users ' +
-      'ON Users.UserId = Memberships.UserId ' +
-      'WHERE Memberships.Email = @Username OR Users.UserName = @Username';
+      'SELECT webpages_Membership.UserId, UserName, UserProfile.UserName, Password from webpages_Membership ' +
+      'INNER JOIN UserProfile ON UserProfile.UserId = webpages_Membership.UserId ' +
+      'WHERE UserProfile.UserName = @Username';
 
-    const getMembershipQuery = new Request(query, function(err, rowCount) {
+    const getMembershipQuery = new Request(query, function (err, rowCount) {
       if (err) return callback(err);
       if (rowCount < 1) return callback();
 
@@ -42,11 +41,10 @@ function getByEmail (email, callback) {
 
     getMembershipQuery.addParameter('Username', TYPES.VarChar, email);
 
-    getMembershipQuery.on('row', function(fields) {
+    getMembershipQuery.on('row', function (fields) {
       user = {
         user_id: fields.UserId.value,
         nickname: fields.UserName.value,
-        name: fields.UserName.value,
         email: fields.Email.value
       };
     });

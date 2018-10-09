@@ -3,7 +3,7 @@
 const loadScript = require('../../utils/load-script');
 const fakeSqlServer = require('../../utils/fake-db/sqlserver');
 
-const dbType = 'MVC3';
+const dbType = 'MVC4';
 const scriptName = 'login';
 
 describe(scriptName, () => {

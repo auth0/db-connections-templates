@@ -22,27 +22,22 @@ module.exports = function(options) {
   const Request = function(query, requestCallback) {
     const self = this;
     self.query = query;
+
     self.addParameter = function(key, type, value) {
       self.query = self.query.replace(new RegExp('@' + key, 'g'), value);
     };
 
     self.run = function() {
       if (options.callback) {
-        options.callback(this.query, requestCallback);
-      } else {
-        requestCallback();
+        return options.callback(this.query, requestCallback);
       }
 
-      if (self.rowCallback && options.row) {
-        setTimeout(function() {
-          options.row(self.rowCallback);
-        }, 100);
-      }
+      return requestCallback();
     };
 
     self.on = function(event, rowCallback) {
-      if (event === 'row') {
-        self.rowCallback = rowCallback;
+      if (event === 'row' && options.row) {
+        options.row(rowCallback);
       }
     };
 
