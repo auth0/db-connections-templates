@@ -1,5 +1,7 @@
 'use strict';
 
+const bcrypt = require('bcrypt');
+
 const loadScript = require('../../utils/load-script');
 const fakeSqlServer = require('../../utils/fake-db/sqlserver');
 
@@ -7,7 +9,6 @@ const dbType = 'MVC4';
 const scriptName = 'login';
 
 describe(scriptName, () => {
-  let password = 'AJyBCPrK0Zi6zeV6wcbBz7OLVe2Sf6vW/+6IxVM8f4pMjzYHc/YTKeA5U9hSao3CdA==';
   const user = {
     user_id: 'uid1',
     nickname: 'duck.t@example.com',
@@ -34,7 +35,7 @@ describe(scriptName, () => {
       UserId: { value: user.user_id },
       UserName: { value: user.email },
       Email: { value: user.email },
-      Password: { value: password }
+      Password: { value: bcrypt.hashSync('password', 10) }
     })
   });
 
@@ -74,7 +75,6 @@ describe(scriptName, () => {
   });
 
   it('should return user data', (done) => {
-    password = 'nIEI+srRmLrN5XrBxsHPsw==AJyBCPrK0Zi6zeV6wcbBz7OLVe2Sf6vW/+6IxVM8f4pMjzYHc/YTKeA5U9hSao3CdA==';
     script('duck.t@example.com', 'password', (err, result) => {
       expect(err).toBeFalsy();
       expect(result).toEqual(user);

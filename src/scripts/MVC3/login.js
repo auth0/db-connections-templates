@@ -1,5 +1,5 @@
 function login(email, password, callback) {
-  const crypto = require('crypto');
+  const bcrypt = require('bcrypt');
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
@@ -30,12 +30,11 @@ function login(email, password, callback) {
     getMembershipUser(email, function(err, user) {
       if (err || !user || !user.profile) return callback(err || new WrongUsernameOrPasswordError(email));
 
-      const salt = Buffer.from(user.password.salt, 'base64');
-      const isPasswordValid = hashPassword(password, salt).toString('base64') === user.password.password;
+      bcrypt.compare(password, user.password, function (err, isValid) {
+        if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
 
-      if (!isPasswordValid) return callback(new WrongUsernameOrPasswordError(email)); // this will return a 401
-
-      return callback(null, user.profile);
+        return callback(null, user.profile);
+      });
     });
   });
 
@@ -57,7 +56,7 @@ function login(email, password, callback) {
   function getMembershipUser(usernameOrEmail, done) {
     var user = null;
     const query =
-      'SELECT Memberships.UserId, Email, Users.UserName, Password, PasswordSalt ' +
+      'SELECT Memberships.UserId, Email, Users.UserName, Password ' +
       'FROM Memberships INNER JOIN Users ' +
       'ON Users.UserId = Memberships.UserId ' +
       'WHERE Memberships.Email = @Username OR Users.UserName = @Username';
@@ -78,32 +77,10 @@ function login(email, password, callback) {
           name: fields.UserName.value,
           email: fields.Email.value,
         },
-        password: {
-          password: fields.Password.value,
-          salt: fields.PasswordSalt.value
-        }
+        password: fields.Password.value
       };
     });
 
     connection.execSql(getMembershipQuery);
-  }
-
-  /**
-   * hashPassword
-   *
-   * This function creates a hashed version of the password to store in the database.
-   *
-   * @password  {[string]}      the password entered by the user
-   * @return    {[string]}      the hashed password
-   */
-  function hashPassword(password, salt) {
-    // the default implementation uses HMACSHA256 and since Key length is 64
-    // and default salt is 16 bytes, Membership will fill the buffer repeating the salt
-    const key = Buffer.concat([salt, salt, salt, salt]);
-    const hmac = crypto.createHmac('sha256', key);
-    hmac.update(Buffer.from(password, 'ucs2'));
-    const hashed = hmac.digest('base64');
-
-    return hashed;
   }
 }

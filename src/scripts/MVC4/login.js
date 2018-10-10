@@ -1,5 +1,5 @@
 function login(email, password, callback) {
-  const crypto = require('crypto');
+  const bcrypt = require('bcrypt');
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
@@ -29,10 +29,10 @@ function login(email, password, callback) {
     getMembershipUser(email, function(err, user) {
       if (err || !user || !user.profile) return callback(err || new WrongUsernameOrPasswordError(email));
 
-      validatePassword(password, user.password.password, function(err, isValid) {
-        if (!isValid) return callback(new WrongUsernameOrPasswordError(email));
+      bcrypt.compare(password, user.password, function (err, isValid) {
+        if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
 
-        callback(null, user.profile);
+        return callback(null, user.profile);
       });
     });
   });
@@ -72,52 +72,10 @@ function login(email, password, callback) {
           nickname: fields.UserName.value,
           email: fields.UserName.value,
         },
-        password: {
-          password: fields.Password.value
-        }
+        password: fields.Password.value
       };
     });
 
     connection.execSql(getMembershipQuery);
-  }
-
-  function fixedTimeComparison(a, b) {
-    var mismatch = (a.length === b.length ? 0 : 1);
-    if (mismatch) {
-      b = a;
-    }
-
-    for (var i = 0, il = a.length; i < il; ++i) {
-      const ac = a.charCodeAt(i);
-      const bc = b.charCodeAt(i);
-      mismatch += (ac === bc ? 0 : 1);
-    }
-
-    return (mismatch === 0);
-  }
-
-
-  /**
-   * validatePassword
-   *
-   * This function gets the password entered by the user, and the original password
-   * hash and salt from database and performs an HMAC SHA256 hash.
-   *
-   * @password      {[string]}      the password entered by the user
-   * @originalHash  {[string]}      the original password hashed from the database
-   *                                (including the salt).
-   * @return        {[bool]}        true if password validates
-   */
-  function validatePassword(password, originalHash, callback) {
-    const iterations = 1000;
-    const hashBytes = Buffer.from(originalHash, 'base64');
-    const salt = hashBytes.slice(1, 17).toString('binary');
-    const hash = hashBytes.slice(17, 49);
-    crypto.pbkdf2(password, salt, iterations, hash.length, 'sha256', function(err, hashed) {
-      if (err) return callback(err);
-      const hashedBase64 = Buffer.from(hashed, 'binary').toString('base64');
-      const isValid = fixedTimeComparison(hash.toString('base64'), hashedBase64);
-      return callback(null, isValid);
-    });
   }
 }

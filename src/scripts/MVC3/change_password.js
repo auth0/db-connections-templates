@@ -1,5 +1,5 @@
 function changePassword(email, newPassword, callback) {
-  const crypto = require('crypto');
+  const bcrypt = require('bcrypt');
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
@@ -15,25 +15,6 @@ function changePassword(email, newPassword, callback) {
       // encrypt: true for Windows Azure enable this
     }
   });
-
-  /**
-   * hashPassword
-   *
-   * This function creates a hashed version of the password to store in the database.
-   *
-   * @password  {[string]}      the password entered by the user
-   * @return    {[string]}      the hashed password
-   */
-  function hashPassword(password, salt) {
-    // the default implementation uses HMACSHA256 and since Key length is 64
-    // and default salt is 16 bytes, Membership will fill the buffer repeating the salt
-    const key = Buffer.concat([salt, salt, salt, salt]);
-    const hmac = crypto.createHmac('sha256', key);
-    hmac.update(Buffer.from(password, 'ucs2'));
-    const hashed = hmac.digest('base64');
-
-    return hashed;
-  }
 
   connection.on('debug', function(text) {
     // if you have connection issues, uncomment this to get more detailed info
@@ -54,9 +35,6 @@ function changePassword(email, newPassword, callback) {
   });
 
   function updateMembershipUser(email, newPassword, callback) {
-    const salt = crypto.randomBytes(16);
-    const hashedPassword = hashPassword(newPassword, salt);
-
     const updateMembership =
       'UPDATE Memberships ' +
       'SET Password=@NewPassword, PasswordSalt=@NewSalt, LastPasswordChangedDate=GETDATE() ' +
@@ -68,10 +46,18 @@ function changePassword(email, newPassword, callback) {
       callback(null, membershipCount > 0);
     });
 
-    updateMembershipQuery.addParameter('NewPassword', TYPES.VarChar, hashedPassword);
-    updateMembershipQuery.addParameter('NewSalt', TYPES.VarChar, salt.toString('base64'));
-    updateMembershipQuery.addParameter('Email', TYPES.VarChar, email);
+    bcrypt.genSalt(10, function(err, salt) {
+      if (err) return callback(err);
 
-    connection.execSql(updateMembershipQuery);
+      bcrypt.hash(newPassword, salt, function(err, hash) {
+        if (err) return callback(err);
+
+        updateMembershipQuery.addParameter('NewPassword', TYPES.VarChar, hash);
+        updateMembershipQuery.addParameter('NewSalt', TYPES.VarChar, salt);
+        updateMembershipQuery.addParameter('Email', TYPES.VarChar, email);
+
+        connection.execSql(updateMembershipQuery);
+      });
+    });
   }
 }

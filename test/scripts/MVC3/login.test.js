@@ -1,5 +1,7 @@
 'use strict';
 
+const bcrypt = require('bcrypt');
+
 const loadScript = require('../../utils/load-script');
 const fakeSqlServer = require('../../utils/fake-db/sqlserver');
 
@@ -16,7 +18,7 @@ describe(scriptName, () => {
 
   const sqlserver = fakeSqlServer({
     callback: (query, callback) => {
-      expect(query).toContain('SELECT Memberships.UserId, Email, Users.UserName, Password, PasswordSalt');
+      expect(query).toContain('SELECT Memberships.UserId, Email, Users.UserName, Password FROM Memberships');
 
       if (query.indexOf('broken@example.com') > 0) {
         return callback(new Error('test db error'));
@@ -34,8 +36,7 @@ describe(scriptName, () => {
       UserId: { value: user.user_id },
       UserName: { value: user.name },
       Email: { value: user.email },
-      Password: { value: 'mBDdEPp7lN0G1wc+0IwA7dye6dbDxWCT3MPqt+yBKV4=' },
-      PasswordSalt: { value: 'salt' }
+      Password: { value: bcrypt.hashSync('password', 10) }
     })
   });
 
