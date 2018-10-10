@@ -28,12 +28,13 @@ describe(scriptName, () => {
 
       expect(params[0]).toEqual('duck.t@example.com');
 
-      bcrypt.hash('password', 10, (err, hash) => callback(null, { rows: [ {
-          ID: 'uid1',
-          EMAIL: 'duck.t@example.com',
-          EMAIL_VERIFIED: true,
-          PASSWORD: hash
-        } ] }));
+      const user = {
+        ID: 'uid1',
+        EMAIL: 'duck.t@example.com',
+        EMAIL_VERIFIED: true,
+        PASSWORD: bcrypt.hashSync('password', 10)
+      };
+      callback(null, { rows: [ user ] });
     }
   });
 
