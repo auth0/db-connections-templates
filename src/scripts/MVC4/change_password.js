@@ -29,7 +29,7 @@ function changePassword(email, newPassword, callback) {
     const iterations = 1000;
     const passwordHashLength = 32;
 
-    crypto.pbkdf2(password, salt, iterations, passwordHashLength, function (err, hashed) {
+    crypto.pbkdf2(password, salt, iterations, passwordHashLength, 'sha256', function (err, hashed) {
       if (err) return callback(err);
 
       const result = Buffer.concat([Buffer.from([0], 1), salt, Buffer.from(hashed, 'binary')]);
@@ -62,14 +62,11 @@ function changePassword(email, newPassword, callback) {
     const findUserIdFromEmail =
       'SELECT UserProfile.UserId FROM ' +
       'UserProfile INNER JOIN webpages_Membership ' +
-      'ON UserProfile.UserId = webpages_Membership.UserId ' +
-      'WHERE UserName = @Email';
+      'ON UserProfile.UserId=webpages_Membership.UserId ' +
+      'WHERE UserName=@Email';
 
     const findUserIdFromEmailQuery = new Request(findUserIdFromEmail, function (err, rowCount, rows) {
-      if (err) return callback(err);
-
-      // No record found with that email
-      if (rowCount < 1) return callback(null, null);
+      if (err || rowCount < 1) return callback(err);
 
       const userId = rows[0][0].value;
 
@@ -83,9 +80,7 @@ function changePassword(email, newPassword, callback) {
 
   function updateMembershipUser(email, newPassword, callback) {
     findUserId(email, function (err, userId) {
-      if (err) return callback(err);
-
-      if (userId === null) return callback();
+      if (err || !userId) return callback(err);
 
       const salt = crypto.randomBytes(16);
 
@@ -95,11 +90,7 @@ function changePassword(email, newPassword, callback) {
         'WHERE UserId=@UserId';
 
       const updateMembershipQuery = new Request(updateMembership, function (err, rowCount) {
-        if (err) return callback(err);
-
-        if (rowCount < 1) return callback();
-
-        callback(null, rowCount > 0);
+        callback(err, rowCount > 0);
       });
 
       hashPassword(newPassword, salt, function (err, hashedPassword) {

@@ -9,18 +9,19 @@ const scriptName = 'change_password';
 describe(scriptName, () => {
   const sqlserver = fakeSqlServer({
     callback: (query, callback) => {
-      expect(query).toContain('UPDATE Memberships SET Password=');
-      expect(query).toContain(', PasswordSalt=');
-      expect(query).toContain(', LastPasswordChangedDate=');
-      expect(query).toContain(' WHERE Email=');
-
       if (query.indexOf('broken@example.com') > 0) {
         return callback(new Error('test db error'));
       }
 
-      expect(query).toContain('WHERE Email=duck.t@example.com');
-
-      return callback(null, 1);
+      if (query.indexOf('SELECT') === 0) {
+        expect(query).toContain('SELECT UserProfile.UserId FROM UserProfile INNER JOIN webpages_Membership');
+        expect(query).toContain('WHERE UserName=duck.t@example.com');
+        callback(null, 1, [ [ { value: 'uid1' } ] ]);
+      } else {
+        expect(query).toContain('UPDATE webpages_Membership SET Password=');
+        expect(query).toContain('WHERE UserId=uid1');
+        callback(null, 1);
+      }
     }
   });
 

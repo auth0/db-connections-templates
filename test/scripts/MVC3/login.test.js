@@ -28,7 +28,7 @@ describe(scriptName, () => {
 
       expect(query).toContain('WHERE Memberships.Email = duck.t@example.com OR Users.UserName = duck.t@example.com');
 
-      callback();
+      callback(null, 1);
     },
     row: (callback) => callback({
       UserId: { value: user.user_id },
@@ -58,7 +58,8 @@ describe(scriptName, () => {
 
   it('should return error, if there is no such user', (done) => {
     script('missing@example.com', 'password', (err, result) => {
-      expect(err).toBeFalsy();
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toEqual('missing@example.com');
       expect(result).toBeFalsy();
       done();
     });
@@ -66,7 +67,8 @@ describe(scriptName, () => {
 
   it('should return error, if password is incorrect', (done) => {
     script('duck.t@example.com', 'wrongPassword', (err, result) => {
-      expect(err).toBeFalsy();
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toEqual('duck.t@example.com');
       expect(result).toBeFalsy();
       done();
     });

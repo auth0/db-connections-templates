@@ -7,16 +7,16 @@ const dbType = 'MVC4';
 const scriptName = 'login';
 
 describe(scriptName, () => {
+  let password = 'AJyBCPrK0Zi6zeV6wcbBz7OLVe2Sf6vW/+6IxVM8f4pMjzYHc/YTKeA5U9hSao3CdA==';
   const user = {
     user_id: 'uid1',
-    name: 'Terrified Duck',
-    nickname: 'Terrified Duck',
+    nickname: 'duck.t@example.com',
     email: 'duck.t@example.com'
   };
 
   const sqlserver = fakeSqlServer({
     callback: (query, callback) => {
-      expect(query).toContain('SELECT Memberships.UserId, Email, Users.UserName, Password, PasswordSalt');
+      expect(query).toContain('SELECT webpages_Membership.UserId, UserName, UserProfile.UserName, Password');
 
       if (query.indexOf('broken@example.com') > 0) {
         return callback(new Error('test db error'));
@@ -26,16 +26,15 @@ describe(scriptName, () => {
         return callback(null, 0);
       }
 
-      expect(query).toContain('WHERE Memberships.Email = duck.t@example.com OR Users.UserName = duck.t@example.com');
+      expect(query).toContain('WHERE UserProfile.UserName = duck.t@example.com');
 
       callback();
     },
     row: (callback) => callback({
       UserId: { value: user.user_id },
-      UserName: { value: user.name },
+      UserName: { value: user.email },
       Email: { value: user.email },
-      Password: { value: 'mBDdEPp7lN0G1wc+0IwA7dye6dbDxWCT3MPqt+yBKV4=' },
-      PasswordSalt: { value: 'salt' }
+      Password: { value: password }
     })
   });
 
@@ -58,7 +57,8 @@ describe(scriptName, () => {
 
   it('should return error, if there is no such user', (done) => {
     script('missing@example.com', 'password', (err, result) => {
-      expect(err).toBeFalsy();
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toEqual('missing@example.com');
       expect(result).toBeFalsy();
       done();
     });
@@ -66,13 +66,15 @@ describe(scriptName, () => {
 
   it('should return error, if password is incorrect', (done) => {
     script('duck.t@example.com', 'wrongPassword', (err, result) => {
-      expect(err).toBeFalsy();
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toEqual('duck.t@example.com');
       expect(result).toBeFalsy();
       done();
     });
   });
 
   it('should return user data', (done) => {
+    password = 'nIEI+srRmLrN5XrBxsHPsw==AJyBCPrK0Zi6zeV6wcbBz7OLVe2Sf6vW/+6IxVM8f4pMjzYHc/YTKeA5U9hSao3CdA==';
     script('duck.t@example.com', 'password', (err, result) => {
       expect(err).toBeFalsy();
       expect(result).toEqual(user);

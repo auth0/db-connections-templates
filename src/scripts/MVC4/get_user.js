@@ -28,7 +28,7 @@ function getByEmail (email, callback) {
 
     var user = {};
     const query =
-      'SELECT webpages_Membership.UserId, UserName, UserProfile.UserName, Password from webpages_Membership ' +
+      'SELECT webpages_Membership.UserId, UserName, UserProfile.UserName from webpages_Membership ' +
       'INNER JOIN UserProfile ON UserProfile.UserId = webpages_Membership.UserId ' +
       'WHERE UserProfile.UserName = @Username';
 

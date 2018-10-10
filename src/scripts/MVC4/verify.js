@@ -42,10 +42,7 @@ function verify (email, callback) {
       'WHERE UserName = @Email';
 
     const findUserIdFromEmailQuery = new Request(findUserIdFromEmail, function (err, rowCount, rows) {
-      if (err) return callback(err);
-
-      // No record found with that email
-      if (rowCount < 1) return callback(null, null);
+      if (err || rowCount < 1) return callback(err);
 
       const userId = rows[0][0].value;
 
@@ -59,9 +56,7 @@ function verify (email, callback) {
 
   function verifyMembershipUser(email, callback) {
     findUserId(email, function (err, userId) {
-      if (err) return callback(err);
-
-      if(userId === null) return callback();
+      if (err || !userId) return callback(err);
 
       // isConfirmed field is the email verification flag
       const updateMembership =
@@ -69,8 +64,7 @@ function verify (email, callback) {
         'WHERE isConfirmed = \'false\' AND UserId = @UserId';
 
       const updateMembershipQuery = new Request(updateMembership, function (err, rowCount) {
-        if (err) return callback(err);
-        callback(null, rowCount > 0);
+        return callback(err, rowCount > 0);
       });
 
       updateMembershipQuery.addParameter('UserId', TYPES.VarChar, userId);

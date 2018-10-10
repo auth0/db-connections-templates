@@ -9,8 +9,6 @@ const scriptName = 'verify';
 describe(scriptName, () => {
   const sqlserver = fakeSqlServer({
     callback: (query, callback) => {
-      expect(query).toContain('UPDATE Memberships SET isApproved = \'true\' WHERE isApproved = \'false\' AND Email = ');
-
       if (query.indexOf('broken@example.com') > 0) {
         return callback(new Error('test db error'));
       }
@@ -19,9 +17,15 @@ describe(scriptName, () => {
         return callback(null, 0);
       }
 
-      expect(query).toEqual('UPDATE Memberships SET isApproved = \'true\' WHERE isApproved = \'false\' AND Email = duck.t@example.com');
-
-      return callback(null, 1);
+      if (query.indexOf('SELECT') === 0) {
+        expect(query).toContain('SELECT UserProfile.UserId FROM UserProfile INNER JOIN webpages_Membership');
+        expect(query).toContain('WHERE UserName = duck.t@example.com');
+        callback(null, 1, [ [ { value: 'uid1' } ] ]);
+      } else {
+        expect(query).toContain('UPDATE webpages_Membership SET isConfirmed = \'true\' ');
+        expect(query).toContain('WHERE isConfirmed = \'false\' AND UserId = uid1');
+        callback(null, 1);
+      }
     }
   });
 
@@ -45,7 +49,7 @@ describe(scriptName, () => {
   it('should not update user, if email already validated', (done) => {
     script('validated@example.com', (err, success) => {
       expect(err).toBeFalsy();
-      expect(success).toEqual(false);
+      expect(success).toBeFalsy();
       done();
     });
   });

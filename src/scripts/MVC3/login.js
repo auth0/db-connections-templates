@@ -28,7 +28,7 @@ function login(email, password, callback) {
     if (err) return callback(err);
 
     getMembershipUser(email, function(err, user) {
-      if (err || !user || !user.profile < 1) return callback(err || new WrongUsernameOrPasswordError(email));
+      if (err || !user || !user.profile) return callback(err || new WrongUsernameOrPasswordError(email));
 
       const salt = Buffer.from(user.password.salt, 'base64');
       const isPasswordValid = hashPassword(password, salt).toString('base64') === user.password.password;
@@ -62,7 +62,9 @@ function login(email, password, callback) {
       'ON Users.UserId = Memberships.UserId ' +
       'WHERE Memberships.Email = @Username OR Users.UserName = @Username';
 
-    const getMembershipQuery = new Request(query, function(err) {
+    const getMembershipQuery = new Request(query, function(err, rowCount) {
+      if (err || rowCount < 1) return done(err);
+
       done(err, user);
     });
 

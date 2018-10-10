@@ -1,4 +1,4 @@
-function login (username, password, callback) {
+function login(email, password, callback) {
   const crypto = require('crypto');
   const sqlserver = require('tedious@1.11.0');
 
@@ -24,10 +24,10 @@ function login (username, password, callback) {
     console.log(JSON.stringify(text));
   });
 
-  connection.on('connect', function (err) {
+  connection.on('connect', function(err) {
     if (err) return callback(err);
-    getMembershipUser(username, function(err, user) {
-      if (err || !user.profile < 1) return callback(err || new WrongUsernameOrPasswordError(email));
+    getMembershipUser(email, function(err, user) {
+      if (err || !user || !user.profile) return callback(err || new WrongUsernameOrPasswordError(email));
 
       validatePassword(password, user.password.password, function(err, isValid) {
         if (!isValid) return callback(new WrongUsernameOrPasswordError(email));
@@ -57,18 +57,20 @@ function login (username, password, callback) {
       'INNER JOIN UserProfile ON UserProfile.UserId = webpages_Membership.UserId ' +
       'WHERE UserProfile.UserName = @Username';
 
-    const getMembershipQuery = new Request(query, function (err) {
+    const getMembershipQuery = new Request(query, function(err, rowCount) {
+      if (err || rowCount < 1) return done(err);
+
       done(err, user);
     });
 
     getMembershipQuery.addParameter('Username', TYPES.VarChar, usernameOrEmail);
 
-    getMembershipQuery.on('row', function (fields) {
+    getMembershipQuery.on('row', function(fields) {
       user = {
         profile: {
-          user_id:      fields.UserId.value,
-          nickname:     fields.UserName.value,
-          email:        fields.UserName.value,
+          user_id: fields.UserId.value,
+          nickname: fields.UserName.value,
+          email: fields.UserName.value,
         },
         password: {
           password: fields.Password.value
@@ -111,10 +113,9 @@ function login (username, password, callback) {
     const hashBytes = Buffer.from(originalHash, 'base64');
     const salt = hashBytes.slice(1, 17).toString('binary');
     const hash = hashBytes.slice(17, 49);
-    crypto.pbkdf2(password, salt, iterations, hash.length, function(err, hashed) {
+    crypto.pbkdf2(password, salt, iterations, hash.length, 'sha256', function(err, hashed) {
       if (err) return callback(err);
       const hashedBase64 = Buffer.from(hashed, 'binary').toString('base64');
-
       const isValid = fixedTimeComparison(hash.toString('base64'), hashedBase64);
       return callback(null, isValid);
     });

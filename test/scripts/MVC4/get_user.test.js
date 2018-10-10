@@ -10,25 +10,24 @@ describe(scriptName, () => {
   const user = {
     user_id: 'uid1',
     nickname: 'Terrified Duck',
-    name: 'Terrified Duck',
     email: 'duck.t@example.com'
   };
 
   const sqlserver = fakeSqlServer({
     callback: (query, callback) => {
-      expect(query).toContain('SELECT Memberships.UserId, Email, Users.UserName FROM Memberships INNER JOIN Users');
+      expect(query).toContain('SELECT webpages_Membership.UserId, UserName, UserProfile.UserName from webpages_Membership');
 
       if (query.indexOf('broken@example.com') > 0) {
         return callback(new Error('test db error'));
       }
 
-      expect(query).toContain('WHERE Memberships.Email = duck.t@example.com OR Users.UserName = duck.t@example.com');
+      expect(query).toContain('WHERE UserProfile.UserName = duck.t@example.com');
 
       return callback(null, 1);
     },
     row: (callback) => callback({
       UserId: { value: user.user_id },
-      UserName: { value: user.name },
+      UserName: { value: user.nickname },
       Email: { value: user.email }
     })
   });

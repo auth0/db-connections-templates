@@ -31,7 +31,7 @@ function create(user, callback) {
     const iterations = 1000;
     const passwordHashLength = 32;
 
-    crypto.pbkdf2(password, salt, iterations, passwordHashLength, function (err, hashed) {
+    crypto.pbkdf2(password, salt, iterations, passwordHashLength, 'sha256', function (err, hashed) {
       if (err) return callback(err);
 
       const result = Buffer.concat([Buffer.from([0], 1), salt, Buffer.from(hashed, 'binary')]);
@@ -54,25 +54,13 @@ function create(user, callback) {
   connection.on('connect', function (err) {
     if (err) return callback(err);
 
-    createMembershipUser(user, function (err, user) {
-      if (err) return callback(err); // this will return a 500
-      if (!user) return callback(); // this will return a 401
-
-      callback(null, user);
-    });
-  });
-
-  function createMembershipUser(user, callback) {
     const createUser =
       'INSERT INTO UserProfile (UserName) ' +
       'OUTPUT Inserted.UserId ' +
       'VALUES (@UserName)';
 
     const createUserQuery = new Request(createUser, function (err, rowCount, rows) {
-      if (err) return callback(err);
-
-      // No records added
-      if (rowCount === 0) return callback(null);
+      if (err || rowCount === 0) return callback(err);
 
       const userId = rows[0][0].value;
       const salt = crypto.randomBytes(16);
@@ -89,9 +77,7 @@ function create(user, callback) {
         '(@UserId, GETDATE(), \'false\', 0, @Password, \'\')';
 
       const createMembershipQuery = new Request(createMembership, function (err, rowCount) {
-        if (err) return callback(err);
-
-        if (rowCount === 0) return callback(null);
+        if (err || rowCount === 0) return callback(err);
 
         callback(null, rowCount > 0);
       });
@@ -110,5 +96,5 @@ function create(user, callback) {
     createUserQuery.addParameter('UserName', TYPES.VarChar, user.email);
 
     connection.execSql(createUserQuery);
-  }
+  });
 }

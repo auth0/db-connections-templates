@@ -13,15 +13,14 @@ describe(scriptName, () => {
         return callback(new Error('test db error'));
       }
 
-      if (query.indexOf('INSERT INTO Users') === 0) {
-        expect(query).toContain('INSERT INTO Users (UserName, LastActivityDate, ApplicationId, UserId, IsAnonymous)');
+      if (query.indexOf('INSERT INTO UserProfile') === 0) {
+        expect(query).toContain('INSERT INTO UserProfile (UserName) OUTPUT Inserted.UserId VALUES ');
+        expect(query).toContain('duck.t@example.com');
+        callback(null, 1, [ [ { value: 'uid1' } ] ]);
       } else {
-        expect(query).toContain('INSERT INTO Memberships (ApplicationId, UserId, Password, PasswordFormat');
+        expect(query).toContain('INSERT INTO webpages_Membership (UserId, CreateDate, IsConfirmed');
+        callback(null, 1);
       }
-
-      expect(query).toContain('duck.t@example.com');
-
-      return callback(null, 1, [ [ { value: 'uid1' } ] ]);
     }
   });
 
@@ -43,8 +42,9 @@ describe(scriptName, () => {
   });
 
   it('should create user', (done) => {
-    script({ email: 'duck.t@example.com', password: 'password' }, (err) => {
+    script({ email: 'duck.t@example.com', password: 'password' }, (err, success) => {
       expect(err).toBeFalsy();
+      expect(success).toEqual(true);
       done();
     });
   });
