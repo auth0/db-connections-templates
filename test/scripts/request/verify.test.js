@@ -1,7 +1,6 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeRequest = require('../../utils/fake-db/request');
 
 const dbType = 'request';
 const scriptName = 'verify';
