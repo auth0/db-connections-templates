@@ -9,8 +9,7 @@ const scriptName = 'get_user';
 describe(scriptName, () => {
   const user = {
     user_id: 'uid1',
-    nickname: 'Terrified Duck',
-    name: 'Terrified Duck',
+    nickname: 'T-Duck',
     email: 'duck.t@example.com'
   };
 
@@ -28,7 +27,7 @@ describe(scriptName, () => {
     },
     row: (callback) => callback({
       UserId: { value: user.user_id },
-      UserName: { value: user.name },
+      UserName: { value: user.nickname },
       Email: { value: user.email }
     })
   });

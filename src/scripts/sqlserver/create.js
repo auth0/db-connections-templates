@@ -36,11 +36,11 @@ function create (user, callback) {
       callback(null);
     });
 
-    const hashedPassword = bcrypt.hashSync(user.password, 10);
-
-    request.addParameter('Email', TYPES.VarChar, user.email);
-    request.addParameter('Password', TYPES.VarChar, hashedPassword);
-
-    connection.execSql(request);
+    bcrypt.hash(user.password, 10, function(err, hash) {
+      if (err) return callback(err);
+      request.addParameter('Email', TYPES.VarChar, user.email);
+      request.addParameter('Password', TYPES.VarChar, hash);
+      connection.execSql(request);
+    });
   });
 }

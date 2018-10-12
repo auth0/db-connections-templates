@@ -9,7 +9,7 @@ const scriptName = 'get_user';
 describe(scriptName, () => {
   const user = {
     user_id: 'uid1',
-    nickname: 'Terrified Duck',
+    nickname: 'T-Duck',
     email: 'duck.t@example.com'
   };
 

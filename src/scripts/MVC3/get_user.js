@@ -46,7 +46,6 @@ function getByEmail (email, callback) {
       user = {
         user_id: fields.UserId.value,
         nickname: fields.UserName.value,
-        name: fields.UserName.value,
         email: fields.Email.value
       };
     });

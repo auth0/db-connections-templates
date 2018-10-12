@@ -38,15 +38,12 @@ describe(scriptName, () => {
 
       expect(query).toEqual('SELECT Id, Nickname, Email, Password FROM dbo.Users WHERE Email = duck.t@example.com');
 
-
-      bcrypt.hash('password', 10, (err, hash) =>
-        callback(null, 1, [[
-          { value: user.user_id },
-          { value: user.nickname },
-          { value: user.email },
-          { value: hash }
-        ]])
-      );
+      callback(null, 1, [[
+        { value: user.user_id },
+        { value: user.nickname },
+        { value: user.email },
+        { value: bcrypt.hashSync('password', 10) }
+      ]])
     }
   });
 
