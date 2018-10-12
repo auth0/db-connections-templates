@@ -1,29 +1,16 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeSqlServer = require('../../utils/fake-db/sqlserver');
+const fakeSqlServer = require('../../utils/sqlserver-mock');
+
 
 const dbType = 'MVC3';
 const scriptName = 'create';
 
 describe(scriptName, () => {
-  const sqlserver = fakeSqlServer({
-    callback: (query, callback) => {
-      if (query.indexOf('broken@example.com') > 0) {
-        return callback(new Error('test db error'));
-      }
-
-      if (query.indexOf('INSERT INTO Users') === 0) {
-        expect(query).toContain('INSERT INTO Users (UserName, LastActivityDate, ApplicationId, UserId, IsAnonymous)');
-      } else {
-        expect(query).toContain('INSERT INTO Memberships (ApplicationId, UserId, Password, PasswordFormat');
-      }
-
-      expect(query).toContain('duck.t@example.com');
-
-      return callback(null, 1, [ [ { value: 'uid1' } ] ]);
-    }
-  });
+  const request = jest.fn();
+  const addParam = jest.fn();
+  const sqlserver = fakeSqlServer(request, addParam);
 
   const globals = {};
   const stubs = { 'tedious@1.11.0': sqlserver };
@@ -35,6 +22,8 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    request.mockImplementation((query, callback) => callback(new Error('test db error')));
+
     script({ email: 'broken@example.com', password: 'password' }, (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
@@ -43,8 +32,69 @@ describe(scriptName, () => {
   });
 
   it('should create user', (done) => {
-    script({ email: 'duck.t@example.com', password: 'password' }, (err) => {
+    request
+      .mockImplementationOnce((query, callback) => {
+        const expectedQuery =
+          'INSERT INTO Users (UserName, LastActivityDate, ApplicationId, UserId, IsAnonymous) ' +
+          'OUTPUT Inserted.UserId ' +
+          'VALUES (@UserName, GETDATE(), @ApplicationId, NEWID(), \'false\')';
+        expect(query).toEqual(expectedQuery);
+        callback(null, 1, [ [ { value: 'uid1' } ] ]);
+      })
+      .mockImplementationOnce((query, callback) => {
+        const expectedQuery =
+          'INSERT INTO Memberships (ApplicationId, UserId, Password, PasswordFormat, ' +
+          'PasswordSalt, Email, isApproved, isLockedOut, CreateDate, LastLoginDate, ' +
+          'LastPasswordChangedDate, LastLockoutDate, FailedPasswordAttemptCount, ' +
+          'FailedPasswordAttemptWindowStart, FailedPasswordAnswerAttemptCount, ' +
+          'FailedPasswordAnswerAttemptWindowsStart) ' +
+          'VALUES ' +
+          '(@ApplicationId, @UserId, @Password, 1, @PasswordSalt, ' +
+          '@Email, \'false\', \'false\', GETDATE(), GETDATE(), GETDATE(), GETDATE(), 0, 0, 0, 0)';
+        expect(query).toEqual(expectedQuery);
+        callback(null, 1);
+      });
+
+    addParam
+      .mockImplementationOnce((key, type, value) => {
+        expect(key).toEqual('UserName');
+        expect(type).toEqual('varchar');
+        expect(value).toEqual('duck.t@example.com');
+      })
+      .mockImplementationOnce((key, type, value) => {
+        expect(key).toEqual('ApplicationId');
+        expect(type).toEqual('varchar');
+        expect(value).toEqual('your-application-id-goes-here');
+      })
+      .mockImplementationOnce((key, type, value) => {
+        expect(key).toEqual('ApplicationId');
+        expect(type).toEqual('varchar');
+        expect(value).toEqual('your-application-id-goes-here');
+      })
+      .mockImplementationOnce((key, type, value) => {
+        expect(key).toEqual('Email');
+        expect(type).toEqual('varchar');
+        expect(value).toEqual('duck.t@example.com');
+      })
+      .mockImplementationOnce((key, type, value) => {
+        expect(key).toEqual('Password');
+        expect(type).toEqual('varchar');
+        expect(value.length).toEqual(60);
+      })
+      .mockImplementationOnce((key, type, value) => {
+        expect(key).toEqual('PasswordSalt');
+        expect(type).toEqual('varchar');
+        expect(value.length).toEqual(29);
+      })
+      .mockImplementationOnce((key, type, value) => {
+        expect(key).toEqual('UserId');
+        expect(type).toEqual('varchar');
+        expect(value).toEqual('uid1');
+      });
+
+    script({ email: 'duck.t@example.com', password: 'password' }, (err, success) => {
       expect(err).toBeFalsy();
+      expect(success).toEqual(true);
       done();
     });
   });

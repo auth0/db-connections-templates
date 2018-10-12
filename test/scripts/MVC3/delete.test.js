@@ -1,26 +1,15 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeSqlServer = require('../../utils/fake-db/sqlserver');
+const fakeSqlServer = require('../../utils/sqlserver-mock');
 
 const dbType = 'MVC3';
 const scriptName = 'delete';
 
 describe(scriptName, () => {
-  const sqlserver = fakeSqlServer({
-    callback: (query, callback) => {
-      expect(query).toContain('DELETE FROM ');
-      expect(query).toContain(' WHERE UserId =');
-
-      if (query.indexOf('broken') > 0) {
-        return callback(new Error('test db error'));
-      }
-
-      expect(query).toContain('WHERE UserId = uid1');
-
-      return callback();
-    }
-  });
+  const request = jest.fn();
+  const addParam = jest.fn();
+  const sqlserver = fakeSqlServer(request, addParam);
 
   const globals = {};
   const stubs = { 'tedious@1.11.0': sqlserver };
@@ -32,6 +21,8 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    request.mockImplementation((query, callback) => callback(new Error('test db error')));
+
     script('broken', (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
@@ -40,6 +31,20 @@ describe(scriptName, () => {
   });
 
   it('should remove user', (done) => {
+    request.mockImplementation((query, callback) => {
+      const expectedQuery =
+        'DELETE FROM Memberships WHERE UserId = @UserId;' +
+        'DELETE FROM Users WHERE UserId = @UserId';
+      expect(query).toEqual(expectedQuery);
+      callback();
+    });
+
+    addParam.mockImplementation((key, type, value) => {
+      expect(key).toEqual('UserId');
+      expect(type).toEqual('varchar');
+      expect(value).toEqual('uid1');
+    });
+
     script('uid1', (err) => {
       expect(err).toBeFalsy();
       done();

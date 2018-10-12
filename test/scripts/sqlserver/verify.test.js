@@ -1,29 +1,15 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeSqlServer = require('../../utils/fake-db/sqlserver');
+const fakeSqlServer = require('../../utils/sqlserver-mock');
 
 const dbType = 'sqlserver';
 const scriptName = 'verify';
 
 describe(scriptName, () => {
-  const sqlserver = fakeSqlServer({
-    callback: (query, callback) => {
-      expect(query).toContain('UPDATE dbo.Users SET Email_Verified = true WHERE Email_Verified = false AND Email = ');
-
-      if (query.indexOf('broken@example.com') > 0) {
-        return callback(new Error('test db error'));
-      }
-
-      if (query.indexOf('validated@example.com') > 0) {
-        return callback(null, 0);
-      }
-
-      expect(query).toEqual('UPDATE dbo.Users SET Email_Verified = true WHERE Email_Verified = false AND Email = duck.t@example.com');
-
-      return callback(null, 1);
-    }
-  });
+  const request = jest.fn();
+  const addParam = jest.fn();
+  const sqlserver = fakeSqlServer(request, addParam);
 
   const globals = {};
   const stubs = { 'tedious@1.11.0': sqlserver };
@@ -35,6 +21,8 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    request.mockImplementation((query, callback) => callback(new Error('test db error')));
+
     script('broken@example.com', (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
@@ -43,6 +31,8 @@ describe(scriptName, () => {
   });
 
   it('should not update user, if email already validated', (done) => {
+    request.mockImplementation((query, callback) => callback(null, 0));
+
     script('validated@example.com', (err, success) => {
       expect(err).toBeFalsy();
       expect(success).toEqual(false);
@@ -51,6 +41,16 @@ describe(scriptName, () => {
   });
 
   it('should update user', (done) => {
+    request.mockImplementation((query, callback) => {
+      expect(query).toEqual('UPDATE dbo.Users SET Email_Verified = true WHERE Email_Verified = false AND Email = @Email');
+      callback(null, 1);
+    });
+    addParam.mockImplementationOnce((key, type, value) => {
+      expect(key).toEqual('Email');
+      expect(type).toEqual('varchar');
+      expect(value).toEqual('duck.t@example.com');
+    });
+
     script('duck.t@example.com', (err, success) => {
       expect(err).toBeFalsy();
       expect(success).toEqual(true);

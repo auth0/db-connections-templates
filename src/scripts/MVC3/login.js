@@ -74,7 +74,6 @@ function login(email, password, callback) {
         profile: {
           user_id: fields.UserId.value,
           nickname: fields.UserName.value,
-          name: fields.UserName.value,
           email: fields.Email.value,
         },
         password: fields.Password.value

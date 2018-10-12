@@ -39,7 +39,7 @@ function verify (email, callback) {
       'SELECT UserProfile.UserId FROM ' +
       'UserProfile INNER JOIN webpages_Membership ' +
       'ON UserProfile.UserId = webpages_Membership.UserId ' +
-      'WHERE UserName = @Email';
+      'WHERE UserName = @Username';
 
     const findUserIdFromEmailQuery = new Request(findUserIdFromEmail, function (err, rowCount, rows) {
       if (err || rowCount < 1) return callback(err);
@@ -49,7 +49,7 @@ function verify (email, callback) {
       callback(null, userId);
     });
 
-    findUserIdFromEmailQuery.addParameter('Email', TYPES.VarChar, email);
+    findUserIdFromEmailQuery.addParameter('Username', TYPES.VarChar, email);
 
     connection.execSql(findUserIdFromEmailQuery);
   }
