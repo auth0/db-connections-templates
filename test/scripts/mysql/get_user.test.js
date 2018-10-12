@@ -1,9 +1,9 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeMongo = require('../../utils/fake-db/mongodb');
+const fakeMysql = require('../../utils/fake-db/mysql');
 
-const dbType = 'mongo';
+const dbType = 'mysql';
 const scriptName = 'get_user';
 
 describe(scriptName, () => {
@@ -13,23 +13,23 @@ describe(scriptName, () => {
     nickname: 'Terrified Duck'
   };
 
-  const mongodb = fakeMongo({
-    findOne: (query, callback) => {
-      expect(typeof query).toEqual('object');
-      expect(typeof query.email).toEqual('string');
+  const mysql = fakeMysql({
+    query: (query, params, callback) => {
+      expect(query).toEqual('SELECT id, nickname, email FROM users WHERE email = ?');
+      expect(typeof params[0]).toEqual('string');
 
-      if (query.email === 'broken@example.com') {
+      if (params[0] === 'broken@example.com') {
         return callback(new Error('test db error'));
       }
 
-      expect(query.email).toEqual('duck.t@example.com');
+      expect(params[0]).toEqual('duck.t@example.com');
 
-      return callback(null, { _id: 'uid1', email: 'duck.t@example.com', nickname: 'Terrified Duck' });
+      return callback(null, [ { id: 'uid1', email: 'duck.t@example.com', nickname: 'Terrified Duck' } ]);
     }
   });
 
   const globals = {};
-  const stubs = { mongodb };
+  const stubs = { mysql };
 
   let script;
 
