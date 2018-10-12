@@ -8,7 +8,7 @@ const scriptName = 'get_user';
 
 describe(scriptName, () => {
   const user = {
-    id: 'uid1',
+    user_id: 'uid1',
     email: 'duck.t@example.com',
     nickname: 'T-Duck'
   };
@@ -24,7 +24,7 @@ describe(scriptName, () => {
 
       expect(params[0]).toEqual('duck.t@example.com');
 
-      return callback(null, { rows: [ user ] });
+      return callback(null, { rows: [ { id: 'uid1', email: 'duck.t@example.com', nickname: 'T-Duck' } ] });
     }
   });
 

@@ -19,7 +19,7 @@ function loginByEmail(email, callback) {
       const user = result.rows[0];
 
       return callback(null, {
-        id: user.id,
+        user_id: user.id,
         nickname: user.nickname,
         email: user.email
       });
