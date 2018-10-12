@@ -1,41 +1,18 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeMongo = require('../../utils/fake-db/mongodb');
 
 const dbType = 'mongo';
 const scriptName = 'create';
 
 describe(scriptName, () => {
-  const mongodb = fakeMongo({
-    findOne: (query, callback) => {
-      expect(typeof query).toEqual('object');
-      expect(typeof query.email).toEqual('string');
+  const findOne = jest.fn();
+  const insert = jest.fn();
+  const mongodb = (conString, callback) => {
+    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com/my-db');
 
-      if (query.email === 'broken@example.com') {
-        return callback(new Error('test findOne error'));
-      }
-
-      if (query.email === 'exists@example.com') {
-        return callback(null, { email: 'exists@example.com' });
-      }
-
-      return callback();
-    },
-    insert: (data, callback) => {
-      expect(typeof data).toEqual('object');
-      expect(typeof data.email).toEqual('string');
-      expect(typeof data.password).toEqual('string');
-
-      if (data.email === 'broken2@example.com') {
-        return callback(new Error('test insert error'));
-      }
-
-      expect(data.email).toEqual('duck.t@example.com');
-
-      return callback();
-    }
-  });
+    callback({ collection: () => ({ findOne, insert })});
+  };
 
   const globals = {};
   const stubs = { mongodb };
@@ -47,6 +24,8 @@ describe(scriptName, () => {
   });
 
   it('should return findOne database error', (done) => {
+    findOne.mockImplementation((query, callback) => callback(new Error('test findOne error')));
+
     script({ email: 'broken@example.com' }, (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test findOne error');
@@ -55,6 +34,8 @@ describe(scriptName, () => {
   });
 
   it('should return error, if user already exists', (done) => {
+    findOne.mockImplementation((query, callback) => callback(null, { email: 'exists@example.com' }));
+
     script({ email: 'exists@example.com' }, (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('the user already exists');
@@ -63,7 +44,9 @@ describe(scriptName, () => {
   });
 
   it('should return hash error', (done) => {
-    script({ email: 'broken2@example.com' }, (err) => {
+    findOne.mockImplementation((query, callback) => callback());
+
+    script({ email: 'broken@example.com' }, (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('data and salt arguments required');
       done();
@@ -71,7 +54,10 @@ describe(scriptName, () => {
   });
 
   it('should return insert database error', (done) => {
-    script({ email: 'broken2@example.com', password: 'password' }, (err) => {
+    findOne.mockImplementation((query, callback) => callback());
+    insert.mockImplementation((query, callback) => callback(new Error('test insert error')));
+
+    script({ email: 'broken@example.com', password: 'password' }, (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test insert error');
       done();
@@ -79,6 +65,17 @@ describe(scriptName, () => {
   });
 
   it('should create user', (done) => {
+    findOne.mockImplementation((query, callback) => {
+      expect(query.email).toEqual('duck.t@example.com');
+      callback();
+    });
+    insert.mockImplementation((data, callback) => {
+      expect(data.email).toEqual('duck.t@example.com');
+      expect(typeof data.password).toEqual('string');
+      expect(data.password.length).toEqual(60);
+      callback();
+    });
+
     script({ email: 'duck.t@example.com', password: 'password' }, (err) => {
       expect(err).toBeFalsy();
       done();

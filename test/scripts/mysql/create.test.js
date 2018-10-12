@@ -1,27 +1,27 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeMysql = require('../../utils/fake-db/mysql');
 
 const dbType = 'mysql';
 const scriptName = 'create';
 
 describe(scriptName, () => {
-  const mysql = fakeMysql({
-    query: (query, params, callback) => {
-      expect(query).toEqual('INSERT INTO users SET ?');
-      expect(typeof params.email).toEqual('string');
-      expect(typeof params.password).toEqual('string');
+  const query = jest.fn();
+  const connect = jest.fn();
+  const mysql = (options) => {
+    const expectedOptions = {
+      host: 'localhost',
+      user: 'me',
+      password: 'secret',
+      database: 'mydb'
+    };
+    expect(options).toEqual(expectedOptions);
 
-      if (params.email === 'broken@example.com') {
-        return callback(new Error('test db error'));
-      }
-
-      expect(params.email).toEqual('duck.t@example.com');
-
-      return callback(null, [ { email: params.email } ]);
-    }
-  });
+    return {
+      connect,
+      query
+    };
+  };
 
   const globals = {};
   const stubs = { mysql };
@@ -34,6 +34,7 @@ describe(scriptName, () => {
 
   it('should return hash error', (done) => {
     script({ email: 'duck.t@example.com' }, (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('data and salt arguments required');
       done();
@@ -41,7 +42,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    query.mockImplementation((query, params, callback) => callback(new Error('test db error')));
+
     script({ email: 'broken@example.com', password: 'password' }, (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -49,7 +53,16 @@ describe(scriptName, () => {
   });
 
   it('should create user', (done) => {
+    query.mockImplementation((query, params, callback) => {
+      expect(query).toEqual('INSERT INTO users SET ?');
+      expect(params.email).toEqual('duck.t@example.com');
+      expect(typeof params.password).toEqual('string');
+      expect(params.password.length).toEqual(60);
+      callback(null, [ { email: params.email } ]);
+    });
+
     script({ email: 'duck.t@example.com', password: 'password' }, (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeFalsy();
       done();
     });

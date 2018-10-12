@@ -1,32 +1,27 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeMysql = require('../../utils/fake-db/mysql');
 
 const dbType = 'mysql';
 const scriptName = 'get_user';
 
 describe(scriptName, () => {
-  const user = {
-    user_id: 'uid1',
-    email: 'duck.t@example.com',
-    nickname: 'Terrified Duck'
+  const query = jest.fn();
+  const connect = jest.fn();
+  const mysql = (options) => {
+    const expectedOptions = {
+      host: 'localhost',
+      user: 'me',
+      password: 'secret',
+      database: 'mydb'
+    };
+    expect(options).toEqual(expectedOptions);
+
+    return {
+      connect,
+      query
+    };
   };
-
-  const mysql = fakeMysql({
-    query: (query, params, callback) => {
-      expect(query).toEqual('SELECT id, nickname, email FROM users WHERE email = ?');
-      expect(typeof params[0]).toEqual('string');
-
-      if (params[0] === 'broken@example.com') {
-        return callback(new Error('test db error'));
-      }
-
-      expect(params[0]).toEqual('duck.t@example.com');
-
-      return callback(null, [ { id: 'uid1', email: 'duck.t@example.com', nickname: 'Terrified Duck' } ]);
-    }
-  });
 
   const globals = {};
   const stubs = { mysql };
@@ -38,7 +33,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    query.mockImplementation((query, params, callback) => callback(new Error('test db error')));
+
     script('broken@example.com', (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -46,9 +44,22 @@ describe(scriptName, () => {
   });
 
   it('should return user data', (done) => {
-    script('duck.t@example.com', (err, data) => {
+    query.mockImplementation((query, params, callback) => {
+      expect(query).toEqual('SELECT id, nickname, email FROM users WHERE email = ?');
+      expect(params[0]).toEqual('duck.t@example.com');
+      callback(null, [ { id: 'uid1', email: 'duck.t@example.com', nickname: 'T-Duck' } ]);
+    });
+
+    const expectedUser = {
+      user_id: 'uid1',
+      email: 'duck.t@example.com',
+      nickname: 'T-Duck'
+    };
+
+    script('duck.t@example.com', (err, user) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeFalsy();
-      expect(data).toEqual(user);
+      expect(user).toEqual(expectedUser);
       done();
     });
   });

@@ -1,28 +1,17 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeMongo = require('../../utils/fake-db/mongodb');
 
 const dbType = 'mongo';
 const scriptName = 'change_password';
 
 describe(scriptName, () => {
-  const mongodb = fakeMongo({
-    update: (query, data, callback) => {
-      expect(typeof query).toEqual('object');
-      expect(typeof data).toEqual('object');
+  const update = jest.fn();
+  const mongodb = (conString, callback) => {
+    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com/my-db');
 
-      if (query.email === 'broken@example.com') {
-        return callback(new Error('test db error'));
-      }
-
-      expect(query.email).toEqual('duck.t@example.com');
-      expect(typeof data.$set.password).toEqual('string');
-
-      return callback(null, 1);
-    }
-  });
-
+    callback({ collection: () => ({ update })});
+  };
   const globals = {};
   const stubs = { mongodb };
 
@@ -33,6 +22,8 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    update.mockImplementation((query, data, callback) => callback(new Error('test db error')));
+
     script('broken@example.com', 'newPassword', (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
@@ -49,6 +40,14 @@ describe(scriptName, () => {
   });
 
   it('should update hashed password', (done) => {
+    update.mockImplementation((query, data, callback) => {
+      expect(query.email).toEqual('duck.t@example.com');
+      expect(typeof data.$set.password).toEqual('string');
+      expect(data.$set.password.length).toEqual(60);
+
+      return callback(null, 1);
+    });
+
     script('duck.t@example.com', 'newPassword', (err, success) => {
       expect(err).toBeFalsy();
       expect(success).toEqual(true);

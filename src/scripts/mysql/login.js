@@ -22,7 +22,7 @@ function login(email, password, callback) {
       if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
 
       callback(null, {
-        id: user.id.toString(),
+        user_id: user.id.toString(),
         nickname: user.nickname,
         email: user.email
       });
