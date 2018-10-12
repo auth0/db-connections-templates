@@ -2,30 +2,28 @@
 
 
 const loadScript = require('../../utils/load-script');
-const fakeOracle = require('../../utils/fake-db/oracle');
 
 const dbType = 'oracle';
 const scriptName = 'verify';
 
 describe(scriptName, () => {
-  const oracledb = fakeOracle({
-    execute: (query, params, callback) => {
-      expect(query).toEqual('update Users set EMAIL_VERIFIED = \'true\' where EMAIL = :email');
-      expect(params.length).toEqual(1);
+  const execute = jest.fn();
+  const close = jest.fn();
+  const oracledb = {
+    outFormat: '',
+    OBJECT: '',
+    getConnection: (options, callback) => {
+      const expectedOptions = {
+        user: 'dbUser',
+        password: 'dbUserPassword',
+        connectString: 'CONNECTION_STRING'
+      };
 
-      if (params[0] === 'broken@example.com') {
-        return callback(new Error('test db error'));
-      }
+      expect(options).toEqual(expectedOptions);
 
-      if (params[0] === 'validated@example.com') {
-        return callback(null, { rowsAffected: 0 });
-      }
-
-      expect(params[0]).toEqual('duck.t@example.com');
-
-      callback(null, { rowsAffected: 1 });
+      callback(null, { execute, close });
     }
-  });
+  };
 
   const globals = { configuration: { dbUser: 'dbUser', dbUserPassword: 'dbUserPassword' } };
   const stubs = { oracledb };
@@ -37,7 +35,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    execute.mockImplementation((query, params, options,  callback) => callback(new Error('test db error')));
+
     script('broken@example.com', (err) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -45,7 +46,10 @@ describe(scriptName, () => {
   });
 
   it('should not update user, if email already validated', (done) => {
+    execute.mockImplementation((query, params, options, callback) => callback(null, { rowsAffected: 0 }));
+
     script('validated@example.com', (err, success) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeFalsy();
       expect(success).toEqual(false);
       done();
@@ -53,7 +57,15 @@ describe(scriptName, () => {
   });
 
   it('should update user', (done) => {
+    execute.mockImplementation((query, params, options,  callback) => {
+      expect(query).toEqual('update Users set EMAIL_VERIFIED = \'true\' where EMAIL = :email and EMAIL_VERIFIED = \'false\'');
+      expect(params[0]).toEqual('duck.t@example.com');
+      expect(options.autoCommit).toEqual(true);
+      callback(null, { rowsAffected: 1 });
+    });
+
     script('duck.t@example.com', (err, success) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeFalsy();
       expect(success).toEqual(true);
       done();

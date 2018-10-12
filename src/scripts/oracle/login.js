@@ -11,7 +11,7 @@ function login(email, password, callback) {
     function(err, connection) {
       if (err) return callback(err);
 
-      const query = 'select ID, EMAIL, PASSWORD, EMAIL_VERIFIED, NICKNAME from Users where EMAIL = :email';
+      const query = 'select ID, EMAIL, PASSWORD, NICKNAME from Users where EMAIL = :email';
       connection.execute(query, [email], function(err, result) {
         doRelease(connection);
 
@@ -23,8 +23,7 @@ function login(email, password, callback) {
           const userProfile = {
             user_id: result.rows[0].ID,
             nickname: result.rows[0].NICKNAME,
-            email: result.rows[0].EMAIL,
-            email_verified: result.rows[0].EMAIL_VERIFIED
+            email: result.rows[0].EMAIL
           };
           callback(null, userProfile);
         });

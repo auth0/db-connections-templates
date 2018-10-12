@@ -10,7 +10,7 @@ function loginByEmail(email, callback) {
     function(err, connection) {
       if (err) return callback(err);
 
-      const query = 'select ID, EMAIL, PASSWORD, NICKNAME from Users where EMAIL = :email';
+      const query = 'select ID, EMAIL, NICKNAME from Users where EMAIL = :email';
       connection.execute(query, [email], function(err, result) {
         doRelease(connection);
 

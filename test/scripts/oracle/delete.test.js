@@ -1,26 +1,28 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeOracle = require('../../utils/fake-db/oracle');
 
 const dbType = 'oracle';
 const scriptName = 'delete';
 
 describe(scriptName, () => {
-  const oracledb = fakeOracle({
-    execute: (query, params, callback) => {
-      expect(query).toEqual('delete Users where ID = :id');
-      expect(params.length).toEqual(1);
+  const execute = jest.fn();
+  const close = jest.fn();
+  const oracledb = {
+    outFormat: '',
+    OBJECT: '',
+    getConnection: (options, callback) => {
+      const expectedOptions = {
+        user: 'dbUser',
+        password: 'dbUserPassword',
+        connectString: 'CONNECTION_STRING'
+      };
 
-      if (params[0] === 'broken') {
-        return callback(new Error('test db error'));
-      }
+      expect(options).toEqual(expectedOptions);
 
-      expect(params[0]).toEqual('uid1');
-
-      return callback(null);
+      callback(null, { execute, close });
     }
-  });
+  };
 
   const globals = { configuration: { dbUser: 'dbUser', dbUserPassword: 'dbUserPassword' } };
   const stubs = { oracledb };
@@ -32,7 +34,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    execute.mockImplementation((query, params, options, callback) => callback(new Error('test db error')));
+
     script('broken', (err) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -40,7 +45,15 @@ describe(scriptName, () => {
   });
 
   it('should remove user', (done) => {
+    execute.mockImplementation((query, params, options, callback) => {
+      expect(query).toEqual('delete Users where ID = :id');
+      expect(params[0]).toEqual('uid1');
+      expect(options.autoCommit).toEqual(true);
+      callback();
+    });
+
     script('uid1', (err) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeFalsy();
       done();
     });

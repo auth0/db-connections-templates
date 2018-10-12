@@ -10,7 +10,7 @@ function verify(email, callback) {
     function(err, connection) {
       if (err) return callback(err);
 
-      const query = 'update Users set EMAIL_VERIFIED = \'true\' where EMAIL = :email';
+      const query = 'update Users set EMAIL_VERIFIED = \'true\' where EMAIL = :email and EMAIL_VERIFIED = \'false\'';
       connection.execute(query, [email], { autoCommit: true }, function(err, result) {
         doRelease(connection);
         callback(err, result && result.rowsAffected > 0);

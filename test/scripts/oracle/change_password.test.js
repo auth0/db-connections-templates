@@ -1,28 +1,28 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeOracle = require('../../utils/fake-db/oracle');
 
 const dbType = 'oracle';
 const scriptName = 'change_password';
 
 describe(scriptName, () => {
-  const oracledb = fakeOracle({
-    execute: (query, params, callback) => {
-      expect(query).toEqual('update Users set PASSWORD = :hash where EMAIL = :email');
-      expect(params.length).toEqual(2);
+  const execute = jest.fn();
+  const close = jest.fn();
+  const oracledb = {
+    outFormat: '',
+    OBJECT: '',
+    getConnection: (options, callback) => {
+      const expectedOptions = {
+        user: 'dbUser',
+        password: 'dbUserPassword',
+        connectString: 'CONNECTION_STRING'
+      };
 
-      if (params[1] === 'broken@example.com') {
-        return callback(new Error('test db error'));
-      }
+      expect(options).toEqual(expectedOptions);
 
-      expect(params[1]).toEqual('duck.t@example.com');
-      expect(typeof params[0]).toEqual('string');
-      expect(params[0].length).toEqual(60);
-
-      return callback(null, { rowsAffected: 1 });
+      callback(null, { execute, close });
     }
-  });
+  };
 
   const globals = { configuration: { dbUser: 'dbUser', dbUserPassword: 'dbUserPassword' } };
   const stubs = { oracledb };
@@ -34,7 +34,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    execute.mockImplementation((query, params, options, callback) => callback(new Error('test db error')));
+
     script('broken@example.com', 'newPassword', (err) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -50,7 +53,17 @@ describe(scriptName, () => {
   });
 
   it('should update hashed password', (done) => {
+    execute.mockImplementation((query, params, options, callback) => {
+      expect(query).toEqual('update Users set PASSWORD = :hash where EMAIL = :email');
+      expect(typeof params[0]).toEqual('string');
+      expect(params[0].length).toEqual(60);
+      expect(params[1]).toEqual('duck.t@example.com');
+      expect(options.autoCommit).toEqual(true);
+      callback(null, { rowsAffected: 1 });
+    });
+
     script('duck.t@example.com', 'newPassword', (err, success) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeFalsy();
       expect(success).toEqual(true);
       done();
