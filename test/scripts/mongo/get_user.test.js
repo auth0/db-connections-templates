@@ -8,9 +8,9 @@ const scriptName = 'get_user';
 
 describe(scriptName, () => {
   const user = {
-    _id: 'uid1',
+    user_id: 'uid1',
     email: 'duck.t@example.com',
-    name: 'Terrified Duck'
+    nickname: 'Terrified Duck'
   };
 
   const mongodb = fakeMongo({
@@ -24,7 +24,7 @@ describe(scriptName, () => {
 
       expect(query.email).toEqual('duck.t@example.com');
 
-      return callback(null, user);
+      return callback(null, { _id: 'uid1', email: 'duck.t@example.com', nickname: 'Terrified Duck' });
     }
   });
 

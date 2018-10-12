@@ -10,9 +10,16 @@ function getByEmail(email, callback) {
 
   connection.connect();
 
-  const query = 'SELECT * FROM users WHERE email = ?';
+  const query = 'SELECT id, nickname, email FROM users WHERE email = ?';
 
   connection.query(query, [ email ], function(err, results) {
-    return callback(err, results && results[0]);
+    if (err || results.length === 0) return callback(err || null);
+
+    const user = results[0];
+    callback(null, {
+      user_id: user.id.toString(),
+      nickname: user.nickname,
+      email: user.email
+    });
   });
 }

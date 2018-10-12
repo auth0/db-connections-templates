@@ -8,14 +8,14 @@ const scriptName = 'get_user';
 
 describe(scriptName, () => {
   const user = {
-    id: 'uid1',
+    user_id: 'uid1',
     email: 'duck.t@example.com',
-    name: 'Terrified Duck'
+    nickname: 'Terrified Duck'
   };
 
   const mysql = fakeMysql({
     query: (query, params, callback) => {
-      expect(query).toEqual('SELECT * FROM users WHERE email = ?');
+      expect(query).toEqual('SELECT id, nickname, email FROM users WHERE email = ?');
       expect(typeof params[0]).toEqual('string');
 
       if (params[0] === 'broken@example.com') {
@@ -24,7 +24,7 @@ describe(scriptName, () => {
 
       expect(params[0]).toEqual('duck.t@example.com');
 
-      return callback(null, [ user ]);
+      return callback(null, [ { id: 'uid1', email: 'duck.t@example.com', nickname: 'Terrified Duck' } ]);
     }
   });
 
