@@ -7,23 +7,10 @@ const dbType = 'request';
 const scriptName = 'verify';
 
 describe(scriptName, () => {
-  const request = fakeRequest({
-    put: (options, callback) => {
-      expect(options.url).toEqual('https://myserviceurl.com/users');
-
-      if (options.json.email === 'broken@example.com') {
-        return callback(new Error('test error'));
-      }
-
-      if (options.json.email === 'none@example.com') {
-        return callback(null, { statusCode: 401 });
-      }
-
-      expect(options.json.email).toEqual('duck.t@example.com');
-
-      return callback(null, { statusCode: 200 }, { user_id: 'uid1' });
-    }
-  });
+  const send = jest.fn();
+  const request = {
+    put: send
+  };
 
   const globals = {};
   const stubs = { request };
@@ -35,6 +22,8 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    send.mockImplementation((options, callback) => callback(new Error('test error')));
+
     script('broken@example.com', (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test error');
@@ -43,6 +32,8 @@ describe(scriptName, () => {
   });
 
   it('should not throw error on 401', (done) => {
+    send.mockImplementation((options, callback) => callback(null, { statusCode: 401 }));
+
     script('none@example.com', (err, data) => {
       expect(err).toBeFalsy();
       expect(data).toBeFalsy();
@@ -51,6 +42,12 @@ describe(scriptName, () => {
   });
 
   it('should update user', (done) => {
+    send.mockImplementation((options, callback) => {
+      expect(options.url).toEqual('https://myserviceurl.com/users');
+      expect(options.json.email).toEqual('duck.t@example.com');
+      callback(null, { statusCode: 200 }, { user_id: 'uid1' });
+    });
+
     script('duck.t@example.com', (err, user) => {
       expect(err).toBeFalsy();
       expect(user).toEqual({ user_id: 'uid1' });

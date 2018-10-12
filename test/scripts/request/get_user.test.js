@@ -1,29 +1,15 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeRequest = require('../../utils/fake-db/request');
 
 const dbType = 'request';
 const scriptName = 'get_user';
 
 describe(scriptName, () => {
-  const user = {
-    user_id: 'uid1',
-    email: 'duck.t@example.com',
-    nickname: 'Terrified Duck'
+  const send = jest.fn();
+  const request = {
+    get: send
   };
-
-  const request = fakeRequest({
-    get: (options, callback) => {
-      if (options.url.indexOf('broken@example.com') > 0) {
-        return callback(new Error('test error'));
-      }
-
-      expect(options.url).toEqual('https://myserviceurl.com/users-by-email/duck.t@example.com');
-
-      return callback(null, { statusCode: 200 }, JSON.stringify(user));
-    }
-  });
 
   const globals = {};
   const stubs = { request };
@@ -35,6 +21,8 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    send.mockImplementation((options, callback) => callback(new Error('test error')));
+
     script('broken@example.com', (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test error');
@@ -43,6 +31,17 @@ describe(scriptName, () => {
   });
 
   it('should return user data', (done) => {
+    const user = {
+      user_id: 'uid1',
+      email: 'duck.t@example.com',
+      nickname: 'T-Duck'
+    };
+
+    send.mockImplementation((options, callback) => {
+      expect(options.url).toEqual('https://myserviceurl.com/users-by-email/duck.t@example.com');
+      callback(null, { statusCode: 200 }, JSON.stringify(user));
+    });
+
     script('duck.t@example.com', (err, data) => {
       expect(err).toBeFalsy();
       expect(data).toEqual(user);

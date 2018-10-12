@@ -1,23 +1,15 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakeRequest = require('../../utils/fake-db/request');
 
 const dbType = 'request';
 const scriptName = 'delete';
 
 describe(scriptName, () => {
-  const request = fakeRequest({
-    del: (options, callback) => {
-      if (options.url.indexOf('/broken') > 0) {
-        return callback(new Error('test error'));
-      }
-
-      expect(options.url).toEqual('https://myserviceurl.com/users/uid1');
-
-      return callback(null, { statusCode: 200 }, {});
-    }
-  });
+  const send = jest.fn();
+  const request = {
+    del: send
+  };
 
   const globals = {};
   const stubs = { request };
@@ -29,6 +21,8 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    send.mockImplementation((options, callback) => callback(new Error('test error')));
+
     script('broken', (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test error');
@@ -37,6 +31,11 @@ describe(scriptName, () => {
   });
 
   it('should remove user', (done) => {
+    send.mockImplementation((options, callback) => {
+      expect(options.url).toEqual('https://myserviceurl.com/users/uid1');
+      callback(null, { statusCode: 200 }, {});
+    });
+
     script('uid1', (err) => {
       expect(err).toBeFalsy();
       done();
