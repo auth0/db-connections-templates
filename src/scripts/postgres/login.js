@@ -23,7 +23,7 @@ function login(email, password, callback) {
         if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
 
         return callback(null, {
-          id: user.id,
+          user_id: user.id,
           nickname: user.nickname,
           email: user.email
         });

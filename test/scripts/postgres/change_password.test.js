@@ -1,28 +1,18 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakePostgres = require('../../utils/fake-db/postgres');
 
 const dbType = 'postgres';
 const scriptName = 'change_password';
 
 describe(scriptName, () => {
-  const pg = fakePostgres({
-    query: (query, params, callback) => {
-      expect(query).toEqual('UPDATE users SET password = $1 WHERE email = $2');
-      expect(params.length).toEqual(2);
+  const query = jest.fn();
+  const close = jest.fn();
+  const pg = (conString, cb) => {
+    expect(conString).toEqual('postgres://user:pass@localhost/mydb');
 
-      if (params[1] === 'broken@example.com') {
-        return callback(new Error('test db error'));
-      }
-
-      expect(params[1]).toEqual('duck.t@example.com');
-      expect(typeof params[0]).toEqual('string');
-      expect(params[0].length).toEqual(60);
-
-      return callback(null, { rowCount: 1 });
-    }
-  });
+    cb(null, { query }, close);
+  };
 
   const globals = {};
   const stubs = { pg };
@@ -34,7 +24,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    query.mockImplementation((query, params, callback) => callback(new Error('test db error')));
+
     script('broken@example.com', 'newPassword', (err) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -50,7 +43,16 @@ describe(scriptName, () => {
   });
 
   it('should update hashed password', (done) => {
+    query.mockImplementation((query, params, callback) => {
+      expect(query).toEqual('UPDATE users SET password = $1 WHERE email = $2');
+      expect(params[1]).toEqual('duck.t@example.com');
+      expect(typeof params[0]).toEqual('string');
+      expect(params[0].length).toEqual(60);
+      callback(null, { rowCount: 1 });
+    });
+
     script('duck.t@example.com', 'newPassword', (err, success) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeFalsy();
       expect(success).toEqual(true);
       done();

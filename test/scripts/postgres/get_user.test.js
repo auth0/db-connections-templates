@@ -1,32 +1,18 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakePostgres = require('../../utils/fake-db/postgres');
 
 const dbType = 'postgres';
 const scriptName = 'get_user';
 
 describe(scriptName, () => {
-  const user = {
-    user_id: 'uid1',
-    email: 'duck.t@example.com',
-    nickname: 'T-Duck'
+  const query = jest.fn();
+  const close = jest.fn();
+  const pg = (conString, cb) => {
+    expect(conString).toEqual('postgres://user:pass@localhost/mydb');
+
+    cb(null, { query }, close);
   };
-
-  const pg = fakePostgres({
-    query: (query, params, callback) => {
-      expect(query).toEqual('SELECT id, nickname, email FROM users WHERE email = $1');
-      expect(params.length).toEqual(1);
-
-      if (params[0] === 'broken@example.com') {
-        return callback(new Error('test db error'));
-      }
-
-      expect(params[0]).toEqual('duck.t@example.com');
-
-      return callback(null, { rows: [ { id: 'uid1', email: 'duck.t@example.com', nickname: 'T-Duck' } ] });
-    }
-  });
 
   const globals = {};
   const stubs = { pg };
@@ -38,7 +24,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    query.mockImplementation((query, params, callback) => callback(new Error('test db error')));
+
     script('broken@example.com', (err) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -46,9 +35,29 @@ describe(scriptName, () => {
   });
 
   it('should return user data', (done) => {
-    script('duck.t@example.com', (err, data) => {
+    query.mockImplementation((query, params, callback) => {
+      expect(query).toEqual('SELECT id, nickname, email FROM users WHERE email = $1');
+      expect(params[0]).toEqual('duck.t@example.com');
+
+      const row = {
+        id: 'uid1',
+        email: 'duck.t@example.com',
+        nickname: 'T-Duck'
+      };
+
+      callback(null, { rows: [ row ] });
+    });
+
+    const expectedUser = {
+      user_id: 'uid1',
+      email: 'duck.t@example.com',
+      nickname: 'T-Duck'
+    };
+
+    script('duck.t@example.com', (err, user) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeFalsy();
-      expect(data).toEqual(user);
+      expect(user).toEqual(expectedUser);
       done();
     });
   });

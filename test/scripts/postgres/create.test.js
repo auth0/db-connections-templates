@@ -1,28 +1,18 @@
 'use strict';
 
 const loadScript = require('../../utils/load-script');
-const fakePostgres = require('../../utils/fake-db/postgres');
 
 const dbType = 'postgres';
 const scriptName = 'create';
 
 describe(scriptName, () => {
-  const pg = fakePostgres({
-    query: (query, params, callback) => {
-      expect(query).toEqual('INSERT INTO users(email, password) VALUES ($1, $2)');
-      expect(params.length).toEqual(2);
+  const query = jest.fn();
+  const close = jest.fn();
+  const pg = (conString, cb) => {
+    expect(conString).toEqual('postgres://user:pass@localhost/mydb');
 
-      if (params[0] === 'broken@example.com') {
-        return callback(new Error('test db error'));
-      }
-
-      expect(params[0]).toEqual('duck.t@example.com');
-      expect(typeof params[1]).toEqual('string');
-      expect(params[1].length).toEqual(60);
-
-      return callback(null, { rowCount: 1 });
-    }
-  });
+    cb(null, { query }, close);
+  };
 
   const globals = {};
   const stubs = { pg };
@@ -42,7 +32,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
+    query.mockImplementation((query, params, callback) => callback(new Error('test db error')));
+
     script({ email: 'broken@example.com', password: 'password' }, (err) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -50,7 +43,16 @@ describe(scriptName, () => {
   });
 
   it('should create user', (done) => {
+    query.mockImplementation((query, params, callback) => {
+      expect(query).toEqual('INSERT INTO users(email, password) VALUES ($1, $2)');
+      expect(params[0]).toEqual('duck.t@example.com');
+      expect(typeof params[1]).toEqual('string');
+      expect(params[1].length).toEqual(60);
+      callback(null, { rowCount: 1 });
+    });
+
     script({ email: 'duck.t@example.com', password: 'password' }, (err) => {
+      expect(close).toHaveBeenCalled();
       expect(err).toBeFalsy();
       done();
     });
