@@ -10,13 +10,12 @@ describe(scriptName, () => {
   const user = {
     user_id: 'uid1',
     email: 'duck.t@example.com',
-    nickname: 'T-Duck',
-    email_verified: true
+    nickname: 'T-Duck'
   };
 
   const oracledb = fakeOracle({
     execute: (query, params, callback) => {
-      expect(query).toEqual('select ID, EMAIL, PASSWORD, EMAIL_VERIFIED, NICKNAME from Users where EMAIL = :email');
+      expect(query).toEqual('select ID, EMAIL, PASSWORD, NICKNAME from Users where EMAIL = :email');
       expect(params.length).toEqual(1);
 
       if (params[0] === 'broken@example.com') {
@@ -28,8 +27,7 @@ describe(scriptName, () => {
       const row = {
         ID: 'uid1',
         NICKNAME: 'T-Duck',
-        EMAIL: 'duck.t@example.com',
-        EMAIL_VERIFIED: true
+        EMAIL: 'duck.t@example.com'
       };
 
       return callback(null, { rows: [ row ] });
