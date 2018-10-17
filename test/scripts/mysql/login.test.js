@@ -4,19 +4,29 @@ const bcrypt = require('bcrypt');
 
 const loadScript = require('../../utils/load-script');
 
-const dbType = 'mongo';
+const dbType = 'mysql';
 const scriptName = 'login';
 
 describe(scriptName, () => {
-  const findOne = jest.fn();
-  const mongodb = (conString, callback) => {
-    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com/my-db');
+  const query = jest.fn();
+  const connect = jest.fn();
+  const mysql = (options) => {
+    const expectedOptions = {
+      host: 'localhost',
+      user: 'me',
+      password: 'secret',
+      database: 'mydb'
+    };
+    expect(options).toEqual(expectedOptions);
 
-    callback({ collection: () => ({ findOne })});
+    return {
+      connect,
+      query
+    };
   };
 
   const globals = { WrongUsernameOrPasswordError: Error };
-  const stubs = { mongodb };
+  const stubs = { mysql };
 
   let script;
 
@@ -25,9 +35,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
-    findOne.mockImplementation((query, callback) => callback(new Error('test db error')));
+    query.mockImplementation((query, params, callback) => callback(new Error('test db error')));
 
     script('broken@example.com', 'password', (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -35,9 +46,10 @@ describe(scriptName, () => {
   });
 
   it('should return error, if there is no such user', (done) => {
-    findOne.mockImplementation((query, callback) => callback());
+    query.mockImplementation((query, params, callback) => callback(null, []));
 
     script('missing@example.com', 'password', (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('missing@example.com');
       done();
@@ -45,9 +57,10 @@ describe(scriptName, () => {
   });
 
   it('should return hash error', (done) => {
-    findOne.mockImplementation((query, callback) => callback(null, query));
+    query.mockImplementation((query, params, callback) => callback(null, [{}]));
 
     script('empty@example.com', 'password', (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('data and hash arguments required');
       done();
@@ -55,10 +68,10 @@ describe(scriptName, () => {
   });
 
   it('should return error, if password is incorrect', (done) => {
-    findOne.mockImplementation((query, callback) =>
-      callback(null, { _id: 'uid1', email: query.email, password: 'some-random-hash' }));
+    query.mockImplementation((query, params, callback) => callback(null, [{ password: 'random-hash' }]));
 
     script('duck.t@example.com', 'wrongPassword', (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('duck.t@example.com');
       done();
@@ -66,17 +79,22 @@ describe(scriptName, () => {
   });
 
   it('should return user data', (done) => {
-    findOne.mockImplementation((query, callback) => {
-      expect(query.email).toEqual('duck.t@example.com');
-
-      callback(null, { _id: 'uid1', email: query.email, password: bcrypt.hashSync('password', 10) })
+    query.mockImplementation((query, params, callback) => {
+      expect(query).toEqual('SELECT id, nickname, email, password FROM users WHERE email = ?');
+      expect(params[0]).toEqual('duck.t@example.com');
+      callback(null, [ { id: 'uid1', email: 'duck.t@example.com', nickname: 'T-Duck', password: bcrypt.hashSync('password', 10) } ]);
     });
 
+    const expectedUser = {
+      user_id: 'uid1',
+      email: 'duck.t@example.com',
+      nickname: 'T-Duck'
+    };
+
     script('duck.t@example.com', 'password', (err, user) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeFalsy();
-      expect(user.email).toEqual('duck.t@example.com');
-      expect(user.user_id).toEqual('uid1');
-      expect(user.password).toBeFalsy();
+      expect(user).toEqual(expectedUser);
       done();
     });
   });

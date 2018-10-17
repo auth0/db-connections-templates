@@ -2,18 +2,29 @@
 
 const loadScript = require('../../utils/load-script');
 
-const dbType = 'mongo';
+const dbType = 'mysql';
 const scriptName = 'change_password';
 
 describe(scriptName, () => {
-  const update = jest.fn();
-  const mongodb = (conString, callback) => {
-    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com/my-db');
+  const query = jest.fn();
+  const connect = jest.fn();
+  const mysql = (options) => {
+    const expectedOptions = {
+      host: 'localhost',
+      user: 'me',
+      password: 'secret',
+      database: 'mydb'
+    };
+    expect(options).toEqual(expectedOptions);
 
-    callback({ collection: () => ({ update })});
+    return {
+      connect,
+      query
+    };
   };
+
   const globals = {};
-  const stubs = { mongodb };
+  const stubs = { mysql };
 
   let script;
 
@@ -22,9 +33,10 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
-    update.mockImplementation((query, data, callback) => callback(new Error('test db error')));
+    query.mockImplementation((query, params, callback) => callback(new Error('test db error')));
 
     script('broken@example.com', 'newPassword', (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('test db error');
       done();
@@ -33,6 +45,7 @@ describe(scriptName, () => {
 
   it('should return hash error', (done) => {
     script('broken@example.com', null, (err) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('data and salt arguments required');
       done();
@@ -40,15 +53,17 @@ describe(scriptName, () => {
   });
 
   it('should update hashed password', (done) => {
-    update.mockImplementation((query, data, callback) => {
-      expect(query.email).toEqual('duck.t@example.com');
-      expect(typeof data.$set.password).toEqual('string');
-      expect(data.$set.password.length).toEqual(60);
+    query.mockImplementation((query, params, callback) => {
+      expect(query).toEqual('UPDATE users SET password = ? WHERE email = ?');
+      expect(typeof params[0]).toEqual('string');
+      expect(params[0].length).toEqual(60);
+      expect(params[1]).toEqual('duck.t@example.com');
 
-      return callback(null, 1);
+      callback(null, [ { email: params[1] } ]);
     });
 
     script('duck.t@example.com', 'newPassword', (err, success) => {
+      expect(connect).toHaveBeenCalled();
       expect(err).toBeFalsy();
       expect(success).toEqual(true);
       done();
