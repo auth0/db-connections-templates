@@ -1,5 +1,5 @@
 module.exports = {
-                change_password: (function changePassword(email, newPassword, callback) {
+ change_password: function changePassword(email, newPassword, callback) {
   // This script should change the password stored for the current user in your
   // database. It is executed when the user clicks on the confirmation link
   // after a reset password request.
@@ -26,8 +26,8 @@ module.exports = {
     'connection at https://manage.auth0.com/#/connections/database';
   return callback(new Error(msg));
 }
-).toString(),
-                create: (function create(user, callback) {
+,
+ create: function create(user, callback) {
   // This script should create a user entry in your existing database. It will
   // be executed when a user attempts to sign up, or when a user is created
   // through the Auth0 dashboard or API.
@@ -55,8 +55,8 @@ module.exports = {
     'at https://manage.auth0.com/#/connections/database';
   return callback(new Error(msg));
 }
-).toString(),
-                delete: (function remove(id, callback) {
+,
+ delete: function remove(id, callback) {
   // This script remove a user from your existing database.
   // It is executed whenever a user is deleted from the API or Auth0 dashboard.
   //
@@ -70,8 +70,8 @@ module.exports = {
     'connection at https://manage.auth0.com/#/connections/database';
   return callback(new Error(msg));
 }
-).toString(),
-                get_user: (function getByEmail(email, callback) {
+,
+ get_user: function getByEmail(email, callback) {
   // This script should retrieve a user profile from your existing database,
   // without authenticating the user.
   // It is used to check if a user exists before executing flows that do not
@@ -90,8 +90,8 @@ module.exports = {
     'at https://manage.auth0.com/#/connections/database';
   return callback(new Error(msg));
 }
-).toString(),
-                login: (function login(email, password, callback) {
+,
+ login: function login(email, password, callback) {
   // This script should authenticate a user against the credentials stored in
   // your database.
   // It is executed when a user attempts to log in or immediately after signing
@@ -129,8 +129,8 @@ module.exports = {
     'at https://manage.auth0.com/#/connections/database';
   return callback(new Error(msg));
 }
-).toString(),
-                verify: (function verify(email, callback) {
+,
+ verify: function verify(email, callback) {
   // This script should mark the current user's email address as verified in
   // your database.
   // It is executed whenever a user clicks the verification link sent by email.
@@ -155,5 +155,5 @@ module.exports = {
     'at https://manage.auth0.com/#/connections/database';
   return callback(new Error(msg));
 }
-).toString()
-              };
+,
+};

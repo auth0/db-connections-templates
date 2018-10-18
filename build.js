@@ -1,22 +1,22 @@
 const fs = require('fs');
 const async = require('async');
 
-const getText = (type, cb) => {
-  const files = [
-    'change_password',
-    'create',
-    'delete',
-    'get_user',
-    'login',
-    'verify'
-  ];
+const templates = [
+  'change_password',
+  'create',
+  'delete',
+  'get_user',
+  'login',
+  'verify'
+];
 
+const getText = (type, cb) => {
   const results = {};
-  async.map(
-    files,
-    (filename, next) => {
-      fs.readFile(`./src/scripts/${type}/${filename}.js`, 'utf8', (err, text) => {
-        results[filename] = text;
+  async.each(
+    templates,
+    (name, next) => {
+      fs.readFile(`./src/scripts/${type}/${name}.js`, 'utf8', (err, text) => {
+        results[name] = text;
         next(err);
       });
     },
@@ -25,36 +25,33 @@ const getText = (type, cb) => {
     });
 };
 
+const buildFileContent = (names, data) => {
+  let content = 'module.exports = {\n';
+
+  names.forEach(name => {
+    const item = (data) ? data[name] : `require('./${name}')`;
+    content += ` ${name}: ` + `${item},\n`;
+  });
+  content += '};\n';
+
+  return content;
+};
+
 const buildAll = () => {
   fs.mkdir('./dist', () =>
     fs.readdir('./src/scripts', (err, dirs) => {
-      async.map(
+      async.each(
         dirs,
         (type, next) => {
           getText(type, (data) => {
-            const template =
-              `module.exports = {
-                change_password: (${data.change_password}).toString(),
-                create: (${data.create}).toString(),
-                delete: (${data.delete}).toString(),
-                get_user: (${data.get_user}).toString(),
-                login: (${data.login}).toString(),
-                verify: (${data.verify}).toString()
-              };`;
-
-            fs.appendFile(`./dist/${type}.js`, template, next);
+            const content = buildFileContent(templates, data);
+            fs.appendFile(`./dist/${type}.js`, content, next);
           });
         },
         (err) => {
           if (err) console.log(err);
-          let index = 'module.exports = {\n';
-
-          dirs.forEach(type => {
-            index += ` ${type}: require('./${type}'),\n`;
-          });
-          index += '};\n';
-
-          fs.appendFile(`./dist/index.js`, index, (e) => console.log(e || 'Complete'));
+          const content = buildFileContent(dirs);
+          fs.appendFile(`./dist/index.js`, content, (e) => console.log(e || 'Complete'));
         });
     })
   );

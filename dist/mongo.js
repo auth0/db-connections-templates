@@ -1,5 +1,5 @@
 module.exports = {
-                change_password: (function changePassword(email, newPassword, callback) {
+ change_password: function changePassword(email, newPassword, callback) {
   const mongo = require('mongodb');
   const bcrypt = require('bcrypt');
 
@@ -15,8 +15,8 @@ module.exports = {
     });
   });
 }
-).toString(),
-                create: (function create (user, callback) {
+,
+ create: function create (user, callback) {
   const mongo = require('mongodb');
   const bcrypt = require('bcrypt');
 
@@ -38,8 +38,8 @@ module.exports = {
     });
   });
 }
-).toString(),
-                delete: (function remove (id, callback) {
+,
+ delete: function remove (id, callback) {
   const mongo = require('mongodb');
 
   mongo('mongodb://user:pass@mymongoserver.com/my-db', function (db) {
@@ -52,18 +52,26 @@ module.exports = {
   });
 
 }
-).toString(),
-                get_user: (function getByEmail (email, callback) {
+,
+ get_user: function getByEmail (email, callback) {
   const mongo = require('mongodb');
 
   mongo('mongodb://user:pass@mymongoserver.com/my-db', function (db) {
     const users = db.collection('users');
 
-    users.findOne({ email: email }, callback);
+    users.findOne({ email: email }, function (err, user) {
+      if (err) return callback(err);
+
+      return callback(null, {
+        user_id: user._id.toString(),
+        nickname: user.nickname,
+        email: user.email
+      });
+    });
   });
 }
-).toString(),
-                login: (function login(email, password, callback) {
+,
+ login: function login(email, password, callback) {
   const mongo = require('mongodb');
   const bcrypt = require('bcrypt');
 
@@ -86,8 +94,8 @@ module.exports = {
     });
   });
 }
-).toString(),
-                verify: (function verify (email, callback) {
+,
+ verify: function verify (email, callback) {
   const mongo = require('mongodb');
 
   mongo('mongodb://user:pass@mymongoserver.com/my-db', function (db) {
@@ -100,5 +108,5 @@ module.exports = {
     });
   });
 }
-).toString()
-              };
+,
+};
