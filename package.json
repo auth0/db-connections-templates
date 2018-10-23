@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "npm run clean && node build",
-    "clean": "rimraf dist",
+    "clean": "rimraf db-scripts.json",
     "test": "jest"
   },
   "repository": {

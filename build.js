@@ -10,7 +10,7 @@ const templates = [
   'verify'
 ];
 
-const getText = (type, cb) => {
+const getScript = (type, cb) => {
   const results = {};
   async.each(
     templates,
@@ -20,41 +20,30 @@ const getText = (type, cb) => {
         next(err);
       });
     },
-    () => {
-      cb(results);
+    (err) => {
+      cb(err, results);
     });
 };
 
-const buildFileContent = (names, data) => {
-  let content = 'module.exports = {\n';
-
-  names.forEach(name => {
-    const item = (data) ? data[name] : `require('./${name}')`;
-    content += ` ${name}: ` + `${item},\n`;
-  });
-  content += '};\n';
-
-  return content;
-};
-
 const buildAll = () => {
-  fs.mkdir('./dist', () =>
-    fs.readdir('./src/scripts', (err, dirs) => {
-      async.each(
-        dirs,
-        (type, next) => {
-          getText(type, (data) => {
-            const content = buildFileContent(templates, data);
-            fs.appendFile(`./dist/${type}.js`, content, next);
-          });
-        },
-        (err) => {
-          if (err) console.log(err);
-          const content = buildFileContent(dirs);
-          fs.appendFile(`./dist/index.js`, content, (e) => console.log(e || 'Complete'));
-        });
-    })
-  );
+  const result = {};
+  fs.readdir('./src/scripts', (err, dirs) => {
+    async.each(
+      dirs,
+      (type, next) =>
+        getScript(type, (err, data) => {
+          result[type] = data;
+          next(err);
+        }),
+      (err) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+
+        fs.appendFile(`./db-scripts.json`, JSON.stringify(result, null, '  '), (e) => console.log(e || 'Complete'));
+      })
+  });
 };
 
 buildAll();
