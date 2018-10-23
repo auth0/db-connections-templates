@@ -2,7 +2,7 @@
   "name": "db-connections-templates",
   "version": "0.1.0",
   "description": "Auth0 Connection Scripts Repository",
-  "main": "./dist/index.js",
+  "main": "./db-scripts.json",
   "scripts": {
     "build": "npm run clean && node build",
     "clean": "rimraf db-scripts.json",
