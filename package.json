@@ -23,12 +23,11 @@
     "bcrypt": "^3.0.1",
     "husky": "^1.1.2",
     "jest": "21.2.1",
-    "parse-comments": "^0.4.3",
     "rimraf": "^2.6.2"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run build",
+      "pre-commit": "npm run build && git add ./db-scripts.json",
       "pre-push": "npm test"
     }
   }
