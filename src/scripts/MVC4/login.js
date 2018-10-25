@@ -46,9 +46,9 @@ function login(email, password, callback) {
   function validatePassword(password, originalHash, callback) {
     const iterations = 1000;
     const hashBytes = Buffer.from(originalHash, 'base64');
-    const salt = hashBytes.slice(1, 17).toString('binary');
+    const salt = hashBytes.slice(1, 17);
     const hash = hashBytes.slice(17, 49);
-    crypto.pbkdf2(password, salt, iterations, hash.length, 'sha256', function(err, hashed) {
+    crypto.pbkdf2(password, salt, iterations, hash.length, 'sha1', function(err, hashed) {
       if (err) return callback(err);
 
       const hashedBase64 = Buffer.from(hashed, 'binary').toString('base64');
