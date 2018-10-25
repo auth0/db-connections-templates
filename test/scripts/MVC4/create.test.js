@@ -59,12 +59,12 @@ describe(scriptName, () => {
       .mockImplementationOnce((key, type, value) => {
         expect(key).toEqual('Password');
         expect(type).toEqual('varchar');
-        expect(value.length).toEqual(60);
+        expect(value.length).toEqual(68);
       })
       .mockImplementationOnce((key, type, value) => {
         expect(key).toEqual('PasswordSalt');
         expect(type).toEqual('varchar');
-        expect(value.length).toEqual(29);
+        expect(value.length).toEqual(24);
       })
       .mockImplementationOnce((key, type, value) => {
         expect(key).toEqual('UserId');

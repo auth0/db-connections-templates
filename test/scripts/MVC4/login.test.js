@@ -1,7 +1,5 @@
 'use strict';
 
-const bcrypt = require('bcrypt');
-
 const loadScript = require('../../utils/load-script');
 const fakeSqlServer = require('../../utils/sqlserver-mock');
 
@@ -50,7 +48,7 @@ describe(scriptName, () => {
     row.mockImplementation((callback) => callback({
       UserId: { value: '' },
       UserName: { value: '' },
-      Password: { value: 'random-hash' }
+      Password: { value: 'ADvKO2jXFpFIe3Gp5bo4i8g7/NuJQCnNQRjqEzxHBV/b0OTwhkp9vDwO9oQ4FFoeGg==' }
     }));
 
     script('duck.t@example.com', 'wrongPassword', (err, result) => {
@@ -80,7 +78,7 @@ describe(scriptName, () => {
     row.mockImplementation((callback) => callback({
       UserId: { value: 'uid1' },
       UserName: { value: 'duck.t@example.com' },
-      Password: { value: bcrypt.hashSync('password', 10) }
+      Password: { value: 'password' }
     }));
 
     const expectedUser = {

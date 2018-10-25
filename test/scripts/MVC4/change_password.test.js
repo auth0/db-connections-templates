@@ -30,16 +30,6 @@ describe(scriptName, () => {
     });
   });
 
-  it('should return hash error', (done) => {
-    request.mockImplementation((query, callback) => callback(null, 1, [ [ { value: 'uid1' } ] ]));
-
-    script('broken@example.com', null, (err) => {
-      expect(err).toBeInstanceOf(Error);
-      expect(err.message).toEqual('data and salt arguments required');
-      done();
-    });
-  });
-
   it('should update hashed password', (done) => {
     request
       .mockImplementationOnce((query, callback) => {
@@ -68,7 +58,7 @@ describe(scriptName, () => {
       .mockImplementationOnce((key, type, value) => {
         expect(key).toEqual('NewPassword');
         expect(type).toEqual('varchar');
-        expect(value.length).toEqual(60);
+        expect(value.length).toEqual(68);
       })
       .mockImplementationOnce((key, type, value) => {
         expect(key).toEqual('UserId');
