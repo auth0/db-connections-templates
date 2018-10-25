@@ -1,5 +1,5 @@
 function create(user, callback) {
-  const bcrypt = require('bcrypt');
+  const crypto = require('crypto');
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
@@ -19,6 +19,24 @@ function create(user, callback) {
   });
 
   const applicationId = 'your-application-id-goes-here';
+
+  /**
+   * hashPassword
+   *
+   * This function creates a hashed version of the password to store in the database.
+   *
+   * @password  {[string]}      the password entered by the user
+   * @return    {[string]}      the hashed password
+   */
+  function hashPassword(password, salt) {
+    // the default implementation uses HMACSHA256 and since Key length is 64
+    // and default salt is 16 bytes, Membership will fill the buffer repeating the salt
+    const key = Buffer.concat([salt, salt, salt, salt]);
+    const hmac = crypto.createHmac('sha256', key);
+    hmac.update(Buffer.from(password, 'ucs2'));
+
+    return hmac.digest('base64');
+  }
 
   connection.on('debug', function(text) {
     // if you have connection issues, uncomment this to get more detailed info
@@ -57,10 +75,12 @@ function create(user, callback) {
       if (rowCount === 0) return callback(null);
 
       const userId = rows[0][0].value;
-
+      const salt = crypto.randomBytes(16);
       const membershipData = {
         ApplicationId: applicationId,
         Email: user.email,
+        Password: hashPassword(user.password, salt),
+        PasswordSalt: salt.toString('base64'),
         UserId: userId
       };
 
@@ -82,21 +102,13 @@ function create(user, callback) {
         callback(null, rowCount > 0);
       });
 
-      bcrypt.genSalt(10, function(err, salt) {
-        if (err) return callback(err);
+      createMembershipQuery.addParameter('ApplicationId', TYPES.VarChar, membershipData.ApplicationId);
+      createMembershipQuery.addParameter('Email', TYPES.VarChar, membershipData.Email);
+      createMembershipQuery.addParameter('Password', TYPES.VarChar, membershipData.Password);
+      createMembershipQuery.addParameter('PasswordSalt', TYPES.VarChar, membershipData.PasswordSalt);
+      createMembershipQuery.addParameter('UserId', TYPES.VarChar, membershipData.UserId);
 
-        bcrypt.hash(user.password, salt, function(err, hash) {
-          if (err) return callback(err);
-
-          createMembershipQuery.addParameter('ApplicationId', TYPES.VarChar, membershipData.ApplicationId);
-          createMembershipQuery.addParameter('Email', TYPES.VarChar, membershipData.Email);
-          createMembershipQuery.addParameter('Password', TYPES.VarChar, hash);
-          createMembershipQuery.addParameter('PasswordSalt', TYPES.VarChar, salt);
-          createMembershipQuery.addParameter('UserId', TYPES.VarChar, membershipData.UserId);
-
-          connection.execSql(createMembershipQuery);
-        });
-      });
+      connection.execSql(createMembershipQuery);
     });
 
     createUserQuery.addParameter('UserName', TYPES.VarChar, userData.UserName);
@@ -105,4 +117,3 @@ function create(user, callback) {
     connection.execSql(createUserQuery);
   }
 }
-

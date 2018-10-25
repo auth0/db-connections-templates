@@ -1,5 +1,5 @@
 function login(email, password, callback) {
-  const bcrypt = require('bcrypt');
+  const crypto = require('crypto');
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
@@ -16,6 +16,24 @@ function login(email, password, callback) {
     }
   });
 
+  /**
+   * hashPassword
+   *
+   * This function creates a hashed version of the password to store in the database.
+   *
+   * @password  {[string]}      the password entered by the user
+   * @return    {[string]}      the hashed password
+   */
+  function hashPassword(password, salt) {
+    // the default implementation uses HMACSHA256 and since Key length is 64
+    // and default salt is 16 bytes, Membership will fill the buffer repeating the salt
+    const key = Buffer.concat([salt, salt, salt, salt]);
+    const hmac = crypto.createHmac('sha256', key);
+    hmac.update(Buffer.from(password, 'ucs2'));
+
+    return hmac.digest('base64');
+  }
+
   connection.on('debug', function(text) {
     // if you have connection issues, uncomment this to get more detailed info
     //console.log(text);
@@ -28,13 +46,15 @@ function login(email, password, callback) {
     if (err) return callback(err);
 
     getMembershipUser(email, function(err, user) {
-      if (err || !user || !user.profile) return callback(err || new WrongUsernameOrPasswordError(email));
+      if (err || !user || !user.profile || !user.password) return callback(err || new WrongUsernameOrPasswordError(email));
 
-      bcrypt.compare(password, user.password, function (err, isValid) {
-        if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
+      const salt = Buffer.from(user.password.salt, 'base64');
 
-        return callback(null, user.profile);
-      });
+      if (hashPassword(password, salt).toString('base64') !== user.password.password) {
+        return callback(new WrongUsernameOrPasswordError(email));
+      }
+
+      callback(null, user.profile);
     });
   });
 
@@ -76,7 +96,10 @@ function login(email, password, callback) {
           nickname: fields.UserName.value,
           email: fields.Email.value,
         },
-        password: fields.Password.value
+        password: {
+          password: fields.Password.value,
+          salt: fields.PasswordSalt.value
+        }
       };
     });
 

@@ -1,5 +1,5 @@
 function changePassword(email, newPassword, callback) {
-  const bcrypt = require('bcrypt');
+  const crypto = require('crypto');
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
@@ -15,6 +15,29 @@ function changePassword(email, newPassword, callback) {
       // encrypt: true for Windows Azure enable this
     }
   });
+
+  /**
+   * hashPassword
+   *
+   * This function hashes a password using HMAC SHA256 algorythm.
+   *
+   * @password    {[string]}    password to be hased
+   * @salt        {[string]}    salt to be used in the hashing process
+   * @callback    {[function]}  callback to be called after hashing the password
+   */
+  function hashPassword(password, salt, callback) {
+    const iterations = 1000;
+    const passwordHashLength = 32;
+
+    crypto.pbkdf2(password, salt, iterations, passwordHashLength, 'sha256', function (err, hashed) {
+      if (err) return callback(err);
+
+      const result = Buffer.concat([Buffer.from([0], 1), salt, Buffer.from(hashed, 'binary')]);
+      const resultBase64 = result.toString('base64');
+
+      callback(null, resultBase64);
+    });
+  }
 
   connection.on('debug', function (text) {
     // if you have connection issues, uncomment this to get more detailed info
@@ -58,6 +81,8 @@ function changePassword(email, newPassword, callback) {
     findUserId(email, function (err, userId) {
       if (err || !userId) return callback(err);
 
+      const salt = crypto.randomBytes(16);
+
       const updateMembership =
         'UPDATE webpages_Membership ' +
         'SET Password=@NewPassword, PasswordChangedDate=GETDATE() ' +
@@ -67,10 +92,10 @@ function changePassword(email, newPassword, callback) {
         callback(err, rowCount > 0);
       });
 
-      bcrypt.hash(newPassword, 10, function(err, hash) {
+      hashPassword(newPassword, salt, function (err, hashedPassword) {
         if (err) return callback(err);
 
-        updateMembershipQuery.addParameter('NewPassword', TYPES.VarChar, hash);
+        updateMembershipQuery.addParameter('NewPassword', TYPES.VarChar, hashedPassword);
         updateMembershipQuery.addParameter('UserId', TYPES.VarChar, userId);
 
         connection.execSql(updateMembershipQuery);

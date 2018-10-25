@@ -1,7 +1,5 @@
 'use strict';
 
-const bcrypt = require('bcrypt');
-
 const loadScript = require('../../utils/load-script');
 const fakeSqlServer = require('../../utils/sqlserver-mock');
 
@@ -51,7 +49,8 @@ describe(scriptName, () => {
       UserId: { value: '' },
       UserName: { value: '' },
       Email: { value: '' },
-      Password: { value: 'random-hash' }
+      Password: { value: 'random-hash' },
+      PasswordSalt: { value: 'random-hash' }
     }));
 
     script('duck.t@example.com', 'wrongPassword', (err, result) => {
@@ -83,7 +82,8 @@ describe(scriptName, () => {
       UserId: { value: 'uid1' },
       UserName: { value: 'T-Duck' },
       Email: { value: 'duck.t@example.com' },
-      Password: { value: bcrypt.hashSync('password', 10) }
+      Password: { value: 'KnTM/CIBAIMHOmrCTaBAXF8IXJCDIEl5mhnS6MESxJw=' },
+      PasswordSalt: { value: 'somerandomsalt' }
     }));
 
     const expectedUser = {
