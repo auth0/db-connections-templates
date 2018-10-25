@@ -1,4 +1,4 @@
-function create (user, callback) {
+function create(user, callback) {
   //this example uses the "tedious" library
   //more info here: http://pekim.github.io/tedious/index.html
   const bcrypt = require('bcrypt');
@@ -32,7 +32,7 @@ function create (user, callback) {
 
     const request = new Request(query, function (err, rows) {
       if (err) return callback(err);
-      console.log('rows: ' + rows);
+      // console.log('rows: ' + rows);
       callback(null);
     });
 

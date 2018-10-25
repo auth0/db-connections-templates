@@ -1,4 +1,4 @@
-function getByEmail (email, callback) {
+function getByEmail(email, callback) {
   const mongo = require('mongodb');
 
   mongo('mongodb://user:pass@mymongoserver.com/my-db', function (db) {

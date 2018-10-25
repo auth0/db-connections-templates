@@ -15,10 +15,10 @@ module.exports = function (type, scriptName, globals, stubs) {
   globals = globals || {};
   stubs = stubs || {};
 
-  const fileName = path.join(__dirname, '../../src/scripts', scriptName + '.js');
+  const fileName = path.join(__dirname, '../../src/scripts/', type, scriptName + '.js');
   const data = fs.readFileSync(fileName, 'utf8');
 
-  return compile(code, globals, stubs);
+  return compile(data, globals, stubs);
 };
 
 function compile(code, globals, stubs) {

@@ -31,7 +31,7 @@ function verify (email, callback) {
 
     const request = new Request(query, function (err, rows) {
       if (err) return callback(err);
-      console.log('rows: ' + rows);
+      // console.log('rows: ' + rows);
       callback(null, rows > 0);
     });
 
