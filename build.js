@@ -10,40 +10,25 @@ const templates = [
   'verify'
 ];
 
-const getScript = (type, cb) => {
-  const results = {};
-  async.each(
-    templates,
-    (name, next) => {
-      fs.readFile(`./src/scripts/${type}/${name}.js`, 'utf8', (err, text) => {
-        results[name] = text;
-        next(err);
-      });
-    },
-    (err) => {
-      cb(err, results);
-    });
+const getScript = (type, done) => {
+  async.reduce(templates, {}, (scripts, name, cb) => {
+    fs.readFile(`./src/scripts/${type}/${name}.js`, 'utf8', (err, text) =>
+      cb(err, Object.assign(scripts, { [name]: text})))
+  }, done);
 };
 
-const buildAll = () => {
-  const result = {};
-  fs.readdir('./src/scripts', (err, dirs) => {
-    async.each(
-      dirs,
-      (type, next) =>
-        getScript(type, (err, data) => {
-          result[type] = data;
-          next(err);
-        }),
-      (err) => {
-        if (err) {
-          console.log(err);
-          return;
-        }
+const processDirs = (dirs, done) => {
+  async.reduce(dirs, {}, (result, type, cb) => {
+    getScript(type, (err, data) =>
+      cb(err, Object.assign(result, { [type]: data})))
+  }, done);
+}
 
-        fs.appendFile(`./db-scripts.json`, JSON.stringify(result, null, '  '), (e) => console.log(e || 'Complete'));
-      })
-  });
+const buildAll = () => {
+  fs.readdir('./src/scripts', (err, dirs) => processDirs(dirs, (err, result) => {
+    if (err) return console.error(err);
+    fs.appendFile(`./db-scripts.json`, JSON.stringify(result, null, '  '), (e) => console.log(e || 'Completed successfully'));
+  }));
 };
 
 buildAll();
