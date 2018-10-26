@@ -31,7 +31,7 @@ function create(user, callback) {
     const iterations = 1000;
     const passwordHashLength = 32;
 
-    crypto.pbkdf2(password, salt, iterations, passwordHashLength, 'sha256', function (err, hashed) {
+    crypto.pbkdf2(password, salt, iterations, passwordHashLength, 'sha1', function (err, hashed) {
       if (err) return callback(err);
 
       const result = Buffer.concat([Buffer.from([0], 1), salt, Buffer.from(hashed, 'binary')]);
