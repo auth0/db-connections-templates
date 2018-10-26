@@ -1,4 +1,4 @@
-function create (user, callback) {
+function create(user, callback) {
   const mongo = require('mongodb');
   const bcrypt = require('bcrypt');
 

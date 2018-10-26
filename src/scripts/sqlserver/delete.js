@@ -1,4 +1,4 @@
-function remove (id, callback) {
+function remove(id, callback) {
   // this example uses the "tedious" library
   // more info here: http://pekim.github.io/tedious/index.html
   const sqlserver = require('tedious@1.11.0');

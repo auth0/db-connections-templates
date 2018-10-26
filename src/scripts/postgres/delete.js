@@ -1,4 +1,4 @@
-function remove (id, callback) {
+function remove(id, callback) {
   //this example uses the "pg" library
   //more info here: https://github.com/brianc/node-postgres
 

@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const decomment = require('decomment');
 
 /**
  * Loads a script, optionally with stubs
@@ -15,14 +14,11 @@ const decomment = require('decomment');
 module.exports = function (type, scriptName, globals, stubs) {
   globals = globals || {};
   stubs = stubs || {};
-  
+
   const fileName = path.join(__dirname, '../../src/scripts/', type, scriptName + '.js');
+  const data = fs.readFileSync(fileName, 'utf8');
 
-  const file = fs.readFileSync(fileName, 'utf8');
-
-  const code =  decomment(file, {trim: true});
-
-  return compile(code, globals, stubs);
+  return compile(data, globals, stubs);
 };
 
 function compile(code, globals, stubs) {

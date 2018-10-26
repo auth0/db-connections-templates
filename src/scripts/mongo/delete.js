@@ -1,4 +1,4 @@
-function remove (id, callback) {
+function remove(id, callback) {
   const mongo = require('mongodb');
 
   mongo('mongodb://user:pass@mymongoserver.com/my-db', function (db) {

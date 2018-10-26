@@ -1,4 +1,4 @@
-function getByEmail (email, callback) {
+function getByEmail(email, callback) {
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
