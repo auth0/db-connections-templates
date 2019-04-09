@@ -17,7 +17,7 @@ function getByEmail(email, callback) {
     }
   });
 
-  const query = 'SELECT id, nickname, email FROM dbo.users WHERE email = @Email';
+  const query = 'SELECT Id, Nickname, Email FROM dbo.Users WHERE Email = @Email';
 
   connection.on('debug', function (text) {
     console.log(text);
@@ -28,21 +28,14 @@ function getByEmail(email, callback) {
   });
 
   connection.on('connect', function (err) {
-    console.log("Established connection to DB");
-
-    if (err) {
-      console.log('Connection to SQL Server Failed.');
-      callback(err);
-    }
+    if (err) return callback(err);
 
     const request = new Request(query, function (err, rowCount) {
-      if (err) {
-        console.log('SQL server query failed.');
-        callback(err);
-      }
+      if (err) return callback(err);
+     
 
       if (rowCount === 0) {
-        callback("The User does not exist, no records returned from DB");
+        return callback("The User does not exist in DB");
       }
     });
 
