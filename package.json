@@ -1,10 +1,10 @@
 {
   "name": "db-connections-templates",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Auth0 Connection Scripts Repository",
-  "main": "./db-scripts.json",
+  "main": "./dbscripts.json",
   "scripts": {
-    "prebuild": "rimraf db-scripts.json",
+    "prebuild": "rimraf dbscripts.json",
     "build": "node ./build",
     "deploy": "node deploy.js",
     "test": "jest"
@@ -30,7 +30,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run build && git add ./db-scripts.json",
+      "pre-commit": "npm run build && git add ./dbscripts.json",
       "pre-push": "npm test"
     }
   }
