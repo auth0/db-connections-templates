@@ -1,5 +1,5 @@
 const aws = require('aws-sdk');
-const scripts = require('./db-scripts.json');
+const scripts = require('./dbscripts.json');
 require('dotenv').config();
 
 (function () {
@@ -8,7 +8,7 @@ require('dotenv').config();
     process.exit(1);
   }
 
-  console.log(`Deploying db-scripts.json into ${process.env.S3_BUCKET} bucket...`);
+  console.log(`Deploying dbscripts.json into ${process.env.S3_BUCKET} bucket...`);
 
   const S3 = new aws.S3({
     accessKeyId: process.env.S3_ACCESS_KEY,
@@ -22,7 +22,7 @@ require('dotenv').config();
 
   const params = {
     Body: JSON.stringify(scripts),
-    Key: 'db-scripts/db-scripts.json',
+    Key: 'dbscripts/dbscripts.json',
     ContentType: 'application/json'
   };
 
@@ -32,7 +32,7 @@ require('dotenv').config();
       process.exit(1);
     }
 
-    console.log('db-scripts.json deployed successfully.');
+    console.log('dbscripts.json deployed successfully.');
     process.exit();
   });
 })();
