@@ -1,18 +1,30 @@
 function create(user, callback) {
-  const mongo = require('mongodb');
   const bcrypt = require('bcrypt');
+  const MongoClient = require('mongodb@3.1.4').MongoClient;
+  const client = new MongoClient('mongodb://user:pass@mymongoserver.com');
 
-  mongo('mongodb://user:pass@mymongoserver.com/my-db', function (db) {
+  client.connect(function (err) {
+    if (err) return callback(err);
+
+    const db = client.db('db-name');
     const users = db.collection('users');
 
     users.findOne({ email: user.email }, function (err, withSameMail) {
-      if (err) return callback(err);
-      if (withSameMail) return callback(new Error('the user already exists'));
+      if (err || withSameMail) {
+        client.close();
+        return callback(err || new Error('the user already exists'));
+      }
 
       bcrypt.hash(user.password, 10, function (err, hash) {
-        if (err) return callback(err);
+        if (err) {
+          client.close();
+          return callback(err);
+        }
+
         user.password = hash;
         users.insert(user, function (err, inserted) {
+          client.close();
+
           if (err) return callback(err);
           callback(null);
         });

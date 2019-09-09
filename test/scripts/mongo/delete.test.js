@@ -7,14 +7,25 @@ const scriptName = 'delete';
 
 describe(scriptName, () => {
   const remove = jest.fn();
-  const mongodb = (conString, callback) => {
-    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com/my-db');
+  const MongoClient = function (conString) {
+    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com');
 
-    callback({ collection: () => ({ remove })});
+    this.close = () => null;
+    this.connect = (cb) => cb();
+    this.db = (dbName) => {
+      expect(dbName).toEqual('db-name');
+      return {
+        collection: function (colName) {
+          expect(colName).toEqual('users');
+          return { remove };
+        }
+      }
+    };
+
+    return this;
   };
-
   const globals = {};
-  const stubs = { mongodb };
+  const stubs = { 'mongodb@3.1.4': { MongoClient } };
 
   let script;
 

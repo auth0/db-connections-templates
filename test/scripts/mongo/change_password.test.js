@@ -7,13 +7,25 @@ const scriptName = 'change_password';
 
 describe(scriptName, () => {
   const update = jest.fn();
-  const mongodb = (conString, callback) => {
-    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com/my-db');
+  const MongoClient = function (conString) {
+    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com');
 
-    callback({ collection: () => ({ update })});
+    this.close = () => null;
+    this.connect = (cb) => cb();
+    this.db = (dbName) => {
+      expect(dbName).toEqual('db-name');
+      return {
+        collection: function (colName) {
+          expect(colName).toEqual('users');
+          return { update };
+        }
+      }
+    };
+
+    return this;
   };
   const globals = {};
-  const stubs = { mongodb };
+  const stubs = { 'mongodb@3.1.4': { MongoClient } };
 
   let script;
 
