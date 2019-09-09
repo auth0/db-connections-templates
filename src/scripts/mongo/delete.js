@@ -1,6 +1,6 @@
 function remove(id, callback) {
   const MongoClient = require('mongodb@3.1.4').MongoClient;
-  const client = new MongoClient('mongodb://user:pass@mymongoserver.com/my-db');
+  const client = new MongoClient('mongodb://user:pass@mymongoserver.com');
 
   client.connect(function (err) {
     if (err) return callback(err);

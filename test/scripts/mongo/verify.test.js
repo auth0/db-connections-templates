@@ -8,7 +8,7 @@ const scriptName = 'verify';
 describe(scriptName, () => {
   const update = jest.fn();
   const MongoClient = function (conString) {
-    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com/my-db');
+    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com');
 
     this.close = () => null;
     this.connect = (cb) => cb();
