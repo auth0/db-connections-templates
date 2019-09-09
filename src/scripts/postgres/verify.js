@@ -5,7 +5,7 @@ function verify (email, callback) {
   const postgres = require('pg');
 
   const conString = 'postgres://user:pass@localhost/mydb';
-  postgres(conString, function (err, client, done) {
+  postgres.connect(conString, function (err, client, done) {
     if (err) return callback(err);
 
     const query = 'UPDATE users SET email_Verified = true WHERE email_Verified = false AND email = $1';

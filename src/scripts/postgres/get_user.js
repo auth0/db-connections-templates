@@ -5,7 +5,7 @@ function loginByEmail(email, callback) {
   const postgres = require('pg');
 
   const conString = 'postgres://user:pass@localhost/mydb';
-  postgres(conString, function (err, client, done) {
+  postgres.connect(conString, function (err, client, done) {
     if (err) return callback(err);
 
     const query = 'SELECT id, nickname, email FROM users WHERE email = $1';

@@ -8,10 +8,12 @@ const scriptName = 'change_password';
 describe(scriptName, () => {
   const query = jest.fn();
   const close = jest.fn();
-  const pg = (conString, cb) => {
-    expect(conString).toEqual('postgres://user:pass@localhost/mydb');
+  const pg = {
+    connect: (conString, cb) => {
+      expect(conString).toEqual('postgres://user:pass@localhost/mydb');
 
-    cb(null, { query }, close);
+      cb(null, { query }, close);
+    }
   };
 
   const globals = {};
