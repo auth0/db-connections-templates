@@ -9,14 +9,25 @@ const scriptName = 'login';
 
 describe(scriptName, () => {
   const findOne = jest.fn();
-  const mongodb = (conString, callback) => {
+  const MongoClient = function (conString) {
     expect(conString).toEqual('mongodb://user:pass@mymongoserver.com/my-db');
 
-    callback({ collection: () => ({ findOne })});
-  };
+    this.close = () => null;
+    this.connect = (cb) => cb();
+    this.db = (dbName) => {
+      expect(dbName).toEqual('db-name');
+      return {
+        collection: function (colName) {
+          expect(colName).toEqual('users');
+          return { findOne };
+        }
+      }
+    };
 
+    return this;
+  };
   const globals = { WrongUsernameOrPasswordError: Error };
-  const stubs = { mongodb };
+  const stubs = { 'mongodb@3.1.4': { MongoClient } };
 
   let script;
 
