@@ -2,7 +2,7 @@ function changePassword(email, newPassword, callback) {
   const mysql = require('mysql');
   const bcrypt = require('bcrypt');
 
-  const connection = mysql({
+  const connection = mysql.createConnection({
     host: 'localhost',
     user: 'me',
     password: 'secret',
