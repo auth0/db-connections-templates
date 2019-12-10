@@ -26,7 +26,7 @@ describe(scriptName, () => {
   };
 
   const globals = {};
-  const stubs = { mysql: mysql };
+  const stubs = { mysql };
 
   let script;
 
