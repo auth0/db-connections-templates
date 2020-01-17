@@ -62,4 +62,20 @@ describe(scriptName, () => {
       done();
     });
   });
+
+  it('should return null', (done) => {
+    findOne.mockImplementation((query, callback) => {
+      expect(query.email).toEqual('duck.t@example.com');
+
+      return callback(null, null);
+    });
+
+    const expectedUser = null;
+
+    script('duck.t@example.com', (err, user) => {
+      expect(err).toBeFalsy();
+      expect(user).toEqual(expectedUser);
+      done();
+    });
+  });
 });
