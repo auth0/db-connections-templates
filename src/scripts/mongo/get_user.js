@@ -12,6 +12,7 @@ function getByEmail(email, callback) {
       client.close();
 
       if (err) return callback(err);
+      if (!user) return callback(null, null);
 
       return callback(null, {
         user_id: user._id.toString(),
