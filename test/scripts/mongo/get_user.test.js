@@ -8,7 +8,7 @@ const scriptName = 'get_user';
 describe(scriptName, () => {
   const findOne = jest.fn();
   const MongoClient = function (conString) {
-    expect(conString).toEqual('mongodb://user:pass@mymongoserver.com');
+    expect(conString).toEqual('mongodb://user:pass@localhost');
 
     this.close = () => null;
     this.connect = (cb) => cb();

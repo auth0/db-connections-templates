@@ -2,7 +2,7 @@ function login(email, password, callback) {
   const request = require('request');
 
   request.get({
-    url: 'https://myserviceurl.com/profile',
+    url: 'https://localhost/profile',
     auth: {
       username: email,
       password: password

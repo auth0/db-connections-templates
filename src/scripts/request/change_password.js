@@ -2,7 +2,7 @@ function changePassword(email, newPassword, callback) {
   const request = require('request');
 
   request.put({
-    url: 'https://myserviceurl.com/users',
+    url: 'https://localhost/users',
     json: { email: email, password: newPassword }
     //for more options check:
     //https://github.com/mikeal/request#requestoptions-callback
