@@ -42,7 +42,7 @@ describe(scriptName, () => {
 
   it('should update user', (done) => {
     send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://myserviceurl.com/users');
+      expect(options.url).toEqual('https://localhost/users');
       expect(options.json.email).toEqual('duck.t@example.com');
       callback(null, { statusCode: 200 }, { user_id: 'uid1' });
     });

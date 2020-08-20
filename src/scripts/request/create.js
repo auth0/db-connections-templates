@@ -2,7 +2,7 @@ function create(user, callback) {
   const request = require('request');
 
   request.post({
-    url: 'https://myserviceurl.com/users',
+    url: 'https://localhost/users',
     json: user
     //for more options check:
     //https://github.com/mikeal/request#requestoptions-callback

@@ -32,7 +32,7 @@ describe(scriptName, () => {
 
   it('should remove user', (done) => {
     send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://myserviceurl.com/users/uid1');
+      expect(options.url).toEqual('https://localhost/users/uid1');
       callback(null, { statusCode: 200 }, {});
     });
 

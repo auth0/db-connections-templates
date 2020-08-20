@@ -1,7 +1,7 @@
 function create(user, callback) {
   const bcrypt = require('bcrypt');
   const MongoClient = require('mongodb@3.1.4').MongoClient;
-  const client = new MongoClient('mongodb://user:pass@mymongoserver.com');
+  const client = new MongoClient('mongodb://user:pass@localhost');
 
   client.connect(function (err) {
     if (err) return callback(err);

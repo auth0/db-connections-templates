@@ -38,7 +38,7 @@ describe(scriptName, () => {
     };
 
     send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://myserviceurl.com/users-by-email/duck.t@example.com');
+      expect(options.url).toEqual('https://localhost/users-by-email/duck.t@example.com');
       callback(null, { statusCode: 200 }, JSON.stringify(user));
     });
 

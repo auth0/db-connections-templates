@@ -2,7 +2,7 @@ function verify(email, callback) {
   const request = require('request');
 
   request.put({
-    url: 'https://myserviceurl.com/users',
+    url: 'https://localhost/users',
     json: { email: email }
     //for more options check:
     //https://github.com/mikeal/request#requestoptions-callback

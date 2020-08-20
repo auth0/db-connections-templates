@@ -32,7 +32,7 @@ describe(scriptName, () => {
 
   it('should create user', (done) => {
     send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://myserviceurl.com/users');
+      expect(options.url).toEqual('https://localhost/users');
       expect(options.json.email).toEqual('duck.t@example.com');
       expect(options.json.password).toEqual('password');
       callback(null, { statusCode: 200 }, {});

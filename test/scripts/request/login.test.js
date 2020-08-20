@@ -48,7 +48,7 @@ describe(scriptName, () => {
     };
 
     send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://myserviceurl.com/profile');
+      expect(options.url).toEqual('https://localhost/profile');
       expect(options.auth.username).toEqual('duck.t@example.com');
       expect(options.auth.password).toEqual('password');
       callback(null, { statusCode: 200 }, JSON.stringify(user));

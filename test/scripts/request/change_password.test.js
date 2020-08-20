@@ -42,7 +42,7 @@ describe(scriptName, () => {
 
   it('should update hashed password', (done) => {
     send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://myserviceurl.com/users');
+      expect(options.url).toEqual('https://localhost/users');
       expect(options.json.password).toEqual('newPassword');
       expect(options.json.email).toEqual('duck.t@example.com');
       callback(null, { statusCode: 200 }, {});
