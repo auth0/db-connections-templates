@@ -10,19 +10,21 @@ const scriptName = 'login';
 describe(scriptName, () => {
   const query = jest.fn();
   const connect = jest.fn();
-  const mysql = (options) => {
-    const expectedOptions = {
-      host: 'localhost',
-      user: 'me',
-      password: 'secret',
-      database: 'mydb'
-    };
-    expect(options).toEqual(expectedOptions);
+  const mysql = {
+    createConnection: (options) => {
+      const expectedOptions = {
+        host: 'localhost',
+        user: 'me',
+        password: 'secret',
+        database: 'mydb'
+      };
+      expect(options).toEqual(expectedOptions);
 
-    return {
-      connect,
-      query
-    };
+      return {
+        connect,
+        query
+      };
+    }
   };
 
   const globals = { WrongUsernameOrPasswordError: Error };

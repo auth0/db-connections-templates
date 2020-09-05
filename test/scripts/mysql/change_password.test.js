@@ -8,19 +8,21 @@ const scriptName = 'change_password';
 describe(scriptName, () => {
   const query = jest.fn();
   const connect = jest.fn();
-  const mysql = (options) => {
-    const expectedOptions = {
-      host: 'localhost',
-      user: 'me',
-      password: 'secret',
-      database: 'mydb'
-    };
-    expect(options).toEqual(expectedOptions);
+  const mysql = {
+    createConnection: (options) => {
+      const expectedOptions = {
+        host: 'localhost',
+        user: 'me',
+        password: 'secret',
+        database: 'mydb'
+      };
+      expect(options).toEqual(expectedOptions);
 
-    return {
-      connect,
-      query
-    };
+      return {
+        connect,
+        query
+      };
+    }
   };
 
   const globals = {};
@@ -59,7 +61,7 @@ describe(scriptName, () => {
       expect(params[0].length).toEqual(60);
       expect(params[1]).toEqual('duck.t@example.com');
 
-      callback(null, [ { email: params[1] } ]);
+      callback(null, [{ email: params[1] }]);
     });
 
     script('duck.t@example.com', 'newPassword', (err, success) => {
