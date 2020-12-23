@@ -8,7 +8,8 @@ const scriptName = 'get_user';
 describe(scriptName, () => {
   const query = jest.fn();
   const connect = jest.fn();
-  const mysql = (options) => {
+  const mysql = {};
+  mysql.createConnection = (options) => {
     const expectedOptions = {
       host: 'localhost',
       user: 'me',
