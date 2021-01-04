@@ -1,7 +1,7 @@
 function verify(email, callback) {
   const mysql = require('mysql');
 
-  const connection = mysql({
+  const connection = mysql.createConnection({
     host: 'localhost',
     user: 'me',
     password: 'secret',
