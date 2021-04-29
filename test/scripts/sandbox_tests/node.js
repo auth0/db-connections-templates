@@ -5,7 +5,6 @@ function changePassword(callback) {
   require('crypto');
   require('mongodb').MongoClient;
   require('mysql');
-  require('oracledb');
   require('pg');
   require('request');
   require('tedious');
