@@ -1,8 +1,8 @@
 # Contributing to Auth0 projects
 
-A big welcome and thank you for considering contributing to the Auth0 open source projects. It’s people like you that make it a reality for users in our community.
+A big welcome and thank you for considering contributing to the Auth0 projects. It’s people like you that make it a reality for users in our community.
 
-Reading and following these guidelines will help us make the contribution process easy and effective for everyone involved. It also communicates that you agree to respect the time of the developers managing and developing these open source projects. In return, we will reciprocate that respect by addressing your issue, assessing changes, and helping you finalize your pull requests.
+Reading and following these guidelines will help us make the contribution process easy and effective for everyone involved. It also communicates that you agree to respect the time of the developers managing and developing these open source projects. In return, we will reciprocate that respect by addressing your issue.
 
 ### Quicklinks
 
@@ -10,7 +10,6 @@ Reading and following these guidelines will help us make the contribution proces
 * [Getting Started](#getting-started)
     * [Making Changes](#making-changes)
     * [Opening Issues](#opening-issues)
-    * [Submitting Pull Requests](#submitting-pull-requests)
 * [Getting in Touch](#getting-in-touch)
     * [Got a question or problem?](#got-a-question-or-problem?)
     * [Vulnerability Reporting](#vulnerability-reporting)
@@ -30,22 +29,6 @@ When contributing to a repository, the first step is to open an issue in that re
 Before you submit a new issue please make sure to search all open and closed issues. It is possible your feature request/issue has already been answered.
 
 [Opening an issue] (https://auth0.com/docs/troubleshoot/customer-support/open-and-manage-support-tickets).
-
-### Submitting Pull Requests
-
-Same goes for PRs, please search all open and closed PRs before submitting a new one. We do not want duplicate effort.
-
-In general, we follow the "fork-and-pull" Git workflow.
-
-* Fork the repository to your own Github account
-* Clone the project to your machine
-* Create a branch locally with a succinct but descriptive name
-* Commit changes to the branch
-* Push changes to your fork
-* Open a Pull Request in the repository (not your own fork) and follow the PR template so that we can efficiently review the changes.
-* This repository requires 2 reviewers from the IAM-User Management Engineering Team before a Pull Request can be merged. 
-
-NOTE: Be sure to merge the latest from "upstream" before making a pull request.
 
 ## Getting in touch
 
