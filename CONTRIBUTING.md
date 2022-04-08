@@ -9,7 +9,6 @@ Reading and following these guidelines will help us make the contribution proces
 * [Code of Conduct](#code-of-conduct)
 * [Getting Started](#getting-started)
     * [Making Changes](#making-changes)
-    * [Opening Issues](#opening-issues)
 * [Getting in Touch](#getting-in-touch)
     * [Got a question or problem?](#got-a-question-or-problem?)
     * [Vulnerability Reporting](#vulnerability-reporting)
@@ -22,13 +21,9 @@ By participating and contributing to this project, you are expected to uphold ou
 
 ### Making Changes
 
-When contributing to a repository, the first step is to open an issue in that repository to discuss the change you wish to make before making them.
+To contribute to a repository, the first step is to open a support ticket
 
-### Opening Issues
-
-Before you submit a new issue please make sure to search all open and closed issues. It is possible your feature request/issue has already been answered.
-
-[Opening an issue] (https://auth0.com/docs/troubleshoot/customer-support/open-and-manage-support-tickets).
+[Opening a ticket] (https://auth0.com/docs/troubleshoot/customer-support/open-and-manage-support-tickets).
 
 ## Getting in touch
 
