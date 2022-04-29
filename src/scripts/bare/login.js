@@ -25,6 +25,15 @@ function login(email, password, callback) {
   //     callback(null, profile);
   // 2. The user's credentials are invalid
   //     callback(new WrongUsernameOrPasswordError(email, "my error message"));
+  //
+  //    Note: Passing no arguments or a falsey first argument to
+  //    `WrongUsernameOrPasswordError` will result in the error being logged as
+  //    an `fu` event (invalid username/email) with an empty string for a user_id.
+  //    Providing a truthy first argument will result in the error being logged
+  //    as an `fp` event (the user exists, but the password is invalid) with a
+  //    user_id value of "auth0|<first argument>". See the `Log Event Type Codes`
+  //    documentation for more information about these event types:
+  //    https://auth0.com/docs/deploy-monitor/logs/log-event-type-codes
   // 3. Something went wrong while trying to reach your database
   //     callback(new Error("my error message"));
   //
