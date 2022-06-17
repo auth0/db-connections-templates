@@ -44,7 +44,11 @@ describe(scriptName, () => {
   });
 
   it('should not update user, if email already validated', (done) => {
-    update.mockImplementation((query, data, callback) => callback(null, 0));
+    update.mockImplementation((query, data, callback) => callback(null, {
+      result: {
+        n: 0,
+      },
+    }));
 
     script('validated@example.com', (err, success) => {
       expect(err).toBeFalsy();
@@ -59,7 +63,11 @@ describe(scriptName, () => {
       expect(query.email_verified).toEqual(false);
       expect(data.$set.email_verified).toEqual(true);
 
-      callback(null, 1)
+      callback(null, {
+        result: {
+          n: 1,
+        },
+      })
     });
 
     script('duck.t@example.com', (err, success) => {
