@@ -9,11 +9,11 @@ function verify (email, callback) {
     const users = db.collection('users');
     const query = { email: email, email_verified: false };
 
-    users.update(query, { $set: { email_verified: true } }, function (err, count) {
+    users.update(query, { $set: { email_verified: true } }, function (err, result) {
       client.close();
 
       if (err) return callback(err);
-      callback(null, count > 0);
+      callback(null, result.result.n > 0);
     });
   });
 }
