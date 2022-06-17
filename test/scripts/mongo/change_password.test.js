@@ -58,7 +58,7 @@ describe(scriptName, () => {
       },
     }));
 
-    script('duck.t@example.com', (err, success) => {
+    script('duck.t@example.com', 'newPassword', (err, success) => {
       expect(err).toBeFalsy();
       expect(success).toEqual(false);
       done();
