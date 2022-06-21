@@ -51,13 +51,31 @@ describe(scriptName, () => {
     });
   });
 
+  it('should return false, if user not found', (done) => {
+    update.mockImplementation((query, data, callback) => callback(null, {
+      result: {
+        n: 0,
+      },
+    }));
+
+    script('duck.t@example.com', 'newPassword', (err, success) => {
+      expect(err).toBeFalsy();
+      expect(success).toEqual(false);
+      done();
+    });
+  });
+
   it('should update hashed password', (done) => {
     update.mockImplementation((query, data, callback) => {
       expect(query.email).toEqual('duck.t@example.com');
       expect(typeof data.$set.password).toEqual('string');
       expect(data.$set.password.length).toEqual(60);
 
-      return callback(null, 1);
+      return callback(null, {
+        result: {
+          n: 1,
+        },
+      });
     });
 
     script('duck.t@example.com', 'newPassword', (err, success) => {

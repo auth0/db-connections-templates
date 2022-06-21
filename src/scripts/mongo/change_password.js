@@ -15,10 +15,10 @@ function changePassword(email, newPassword, callback) {
         return callback(err);
       }
 
-      users.update({ email: email }, { $set: { password: hash } }, function (err, count) {
+      users.update({ email: email }, { $set: { password: hash } }, function (err, result) {
         client.close();
         if (err) return callback(err);
-        callback(null, count > 0);
+        callback(null, result.result.n > 0);
       });
     });
   });
