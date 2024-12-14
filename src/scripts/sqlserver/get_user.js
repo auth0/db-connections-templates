@@ -1,18 +1,19 @@
 function getByEmail(email, callback) {
-  //this example uses the "tedious" library
-  //more info here: http://pekim.github.io/tedious/index.html
+  //more info here: https://tediousjs.github.io/tedious/index.html
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
   const Request = sqlserver.Request;
   const TYPES = sqlserver.TYPES;
+  var user_profile = [];
 
   const connection = new Connection({
-    userName:  'test',
-    password:  'test',
-    server:    'localhost',
-    options:  {
-      database: 'mydb'
+    userName: '',
+    password: '',
+    server: '',
+    options: {
+      database: '',
+      port: 1433
     }
   });
 
@@ -29,13 +30,26 @@ function getByEmail(email, callback) {
   connection.on('connect', function (err) {
     if (err) return callback(err);
 
-    const request = new Request(query, function (err, rowCount, rows) {
+    const request = new Request(query, function (err, rowCount) {
       if (err) return callback(err);
+     
 
+      if (rowCount === 0) {
+        return callback("The User does not exist in DB");
+      }
+    });
+
+    // Found a record for the user in DB
+    request.on('row', function (columns) {
+      columns.forEach(function (column) {
+        user_profile.push(column.value);
+      });
+
+      // Return the user profile
       callback(null, {
-        user_id: rows[0][0].value,
-        nickname: rows[0][1].value,
-        email: rows[0][2].value
+        user_id: user_profile[0],
+        nickname: user_profile[1],
+        email: user_profile[2]
       });
     });
 
