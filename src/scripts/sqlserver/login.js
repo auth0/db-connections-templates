@@ -1,4 +1,4 @@
-function login(email, password, callback) {
+function login(identifierValue, password, callback) {
   //this example uses the "tedious" library
   //more info here: http://pekim.github.io/tedious/index.html
   const bcrypt = require('bcrypt');
@@ -31,10 +31,10 @@ function login(email, password, callback) {
     if (err) return callback(err);
 
     const request = new Request(query, function (err, rowCount, rows) {
-      if (err || rowCount < 1) return callback(err || new WrongUsernameOrPasswordError(email));
+      if (err || rowCount < 1) return callback(err || new WrongUsernameOrPasswordError(identifierValue));
 
       bcrypt.compare(password, rows[0][3].value, function (err, isValid) {
-        if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
+        if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(identifierValue));
 
         callback(null, {
           user_id: rows[0][0].value,
@@ -44,7 +44,7 @@ function login(email, password, callback) {
       });
     });
 
-    request.addParameter('Email', TYPES.VarChar, email);
+    request.addParameter('Email', TYPES.VarChar, identifierValue);
     connection.execSql(request);
   });
 }

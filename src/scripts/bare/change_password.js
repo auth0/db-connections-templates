@@ -1,4 +1,4 @@
-function changePassword(email, newPassword, callback) {
+function changePassword(identifierValue, newPassword, callback) {
   // This script should change the password stored for the current user in your
   // database. It is executed when the user clicks on the confirmation link
   // after a reset password request.

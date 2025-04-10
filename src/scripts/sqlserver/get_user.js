@@ -1,4 +1,4 @@
-function getByEmail(email, callback) {
+function getUser(identifierValue, callback) {
   //this example uses the "tedious" library
   //more info here: http://pekim.github.io/tedious/index.html
   const sqlserver = require('tedious@1.11.0');
@@ -39,7 +39,7 @@ function getByEmail(email, callback) {
       });
     });
 
-    request.addParameter('Email', TYPES.VarChar, email);
+    request.addParameter('Email', TYPES.VarChar, identifierValue);
     connection.execSql(request);
   });
 }

@@ -1,4 +1,4 @@
-function login(email, password, callback) {
+function login(identifierValue, password, callback) {
   const crypto = require('crypto');
   const sqlserver = require('tedious@1.11.0');
 
@@ -45,13 +45,13 @@ function login(email, password, callback) {
   connection.on('connect', function(err) {
     if (err) return callback(err);
 
-    getMembershipUser(email, function(err, user) {
-      if (err || !user || !user.profile || !user.password) return callback(err || new WrongUsernameOrPasswordError(email));
+    getMembershipUser(identifierValue, function(err, user) {
+      if (err || !user || !user.profile || !user.password) return callback(err || new WrongUsernameOrPasswordError(identifierValue));
 
       const salt = Buffer.from(user.password.salt, 'base64');
 
       if (hashPassword(password, salt).toString('base64') !== user.password.password) {
-        return callback(new WrongUsernameOrPasswordError(email));
+        return callback(new WrongUsernameOrPasswordError(identifierValue));
       }
 
       callback(null, user.profile);

@@ -1,4 +1,4 @@
-function changePassword (email, newPassword, callback) {
+function changePassword (identifierValue, newPassword, callback) {
   //this example uses the "pg" library
   //more info here: https://github.com/brianc/node-postgres
 
@@ -13,7 +13,7 @@ function changePassword (email, newPassword, callback) {
       if (err) return callback(err);
 
       const query = 'UPDATE users SET password = $1 WHERE email = $2';
-      client.query(query, [hash, email], function (err, result) {
+      client.query(query, [hash, identifierValue], function (err, result) {
         // NOTE: always call `done()` here to close
         // the connection to the database
         done();
