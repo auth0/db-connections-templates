@@ -1,4 +1,4 @@
-function changePassword (email, newPassword, callback) {
+function changePassword (identifierValue, newPassword, callback) {
   //this example uses the "tedious" library
   //more info here: http://tediousjs.github.io/tedious/
   const bcrypt = require('bcrypt');
@@ -39,7 +39,7 @@ function changePassword (email, newPassword, callback) {
     bcrypt.hash(newPassword, 10, function (err, hash) {
       if (err) return callback(err);
       request.addParameter('NewPassword', TYPES.VarChar, hash);
-      request.addParameter('Email', TYPES.VarChar, email);
+      request.addParameter('Email', TYPES.VarChar, identifierValue);
       connection.execSql(request);
     });
   });

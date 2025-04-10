@@ -1,4 +1,4 @@
-function loginByEmail(email, callback) {
+function getUser(identifierValue, callback) {
   //this example uses the "pg" library
   //more info here: https://github.com/brianc/node-postgres
 
@@ -9,7 +9,7 @@ function loginByEmail(email, callback) {
     if (err) return callback(err);
 
     const query = 'SELECT id, nickname, email FROM users WHERE email = $1';
-    client.query(query, [email], function (err, result) {
+    client.query(query, [identifierValue], function (err, result) {
       // NOTE: always call `done()` here to close
       // the connection to the database
       done();

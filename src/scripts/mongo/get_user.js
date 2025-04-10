@@ -1,4 +1,4 @@
-function getByEmail(email, callback) {
+function getUser(identifierValue, callback) {
   const MongoClient = require('mongodb@3.1.4').MongoClient;
   const client = new MongoClient('mongodb://user:pass@localhost');
 
@@ -8,7 +8,7 @@ function getByEmail(email, callback) {
     const db = client.db('db-name');
     const users = db.collection('users');
 
-    users.findOne({ email: email }, function (err, user) {
+    users.findOne({ email: identifierValue }, function (err, user) {
       client.close();
 
       if (err) return callback(err);

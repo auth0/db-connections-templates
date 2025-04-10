@@ -1,4 +1,4 @@
-function login(email, password, callback) {
+function login(identifierValue, password, callback) {
   // This script should authenticate a user against the credentials stored in
   // your database.
   // It is executed when a user attempts to log in or immediately after signing
