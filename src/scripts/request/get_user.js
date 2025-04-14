@@ -1,8 +1,8 @@
-function loginByEmail(email, callback) {
+function getUser(identifierValue, callback) {
   const request = require('request');
 
   request.get({
-    url: 'https://localhost/users-by-email/' + email
+    url: 'https://localhost/users-by-email/' + identifierValue
     //for more options check:
     //https://github.com/mikeal/request#requestoptions-callback
   }, function(err, response, body) {

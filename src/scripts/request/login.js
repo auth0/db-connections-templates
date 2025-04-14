@@ -1,10 +1,10 @@
-function login(email, password, callback) {
+function login(identifierValue, password, callback) {
   const request = require('request');
 
   request.get({
     url: 'https://localhost/profile',
     auth: {
-      username: email,
+      username: identifierValue,
       password: password
     }
     //for more options check:

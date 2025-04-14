@@ -1,4 +1,4 @@
-function changePassword(email, newPassword, callback) {
+function changePassword(identifierValue, newPassword, callback) {
   const bcrypt = require('bcrypt');
   const MongoClient = require('mongodb@3.1.4').MongoClient;
   const client = new MongoClient('mongodb://user:pass@localhost');
@@ -15,7 +15,7 @@ function changePassword(email, newPassword, callback) {
         return callback(err);
       }
 
-      users.update({ email: email }, { $set: { password: hash } }, function (err, result) {
+      users.update({ email: identifierValue }, { $set: { password: hash } }, function (err, result) {
         client.close();
         if (err) return callback(err);
         callback(null, result.result.n > 0);

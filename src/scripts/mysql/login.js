@@ -1,4 +1,4 @@
-function login(email, password, callback) {
+function login(identifierValue, password, callback) {
   const mysql = require('mysql');
   const bcrypt = require('bcrypt');
 
@@ -13,13 +13,13 @@ function login(email, password, callback) {
 
   const query = 'SELECT id, nickname, email, password FROM users WHERE email = ?';
 
-  connection.query(query, [ email ], function(err, results) {
+  connection.query(query, [ identifierValue ], function(err, results) {
     if (err) return callback(err);
-    if (results.length === 0) return callback(new WrongUsernameOrPasswordError(email));
+    if (results.length === 0) return callback(new WrongUsernameOrPasswordError(identifierValue));
     const user = results[0];
 
     bcrypt.compare(password, user.password, function(err, isValid) {
-      if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
+      if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(identifierValue));
 
       callback(null, {
         user_id: user.id.toString(),

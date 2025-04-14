@@ -1,4 +1,4 @@
-function changePassword(email, newPassword, callback) {
+function changePassword(identifierValue, newPassword, callback) {
   const crypto = require('crypto');
   const sqlserver = require('tedious@1.11.0');
 
@@ -45,7 +45,7 @@ function changePassword(email, newPassword, callback) {
   connection.on('connect', function(err) {
     if (err) return callback(err);
 
-    updateMembershipUser(email, newPassword, function(err, wasUpdated) {
+    updateMembershipUser(identifierValue, newPassword, function(err, wasUpdated) {
       if (err) return callback(err); // this will return a 500
 
       callback(null, wasUpdated);

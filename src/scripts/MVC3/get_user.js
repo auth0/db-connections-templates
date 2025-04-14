@@ -1,4 +1,4 @@
-function getByEmail(email, callback) {
+function getUser(identifierValue, callback) {
   const sqlserver = require('tedious@1.11.0');
 
   const Connection = sqlserver.Connection;
@@ -40,7 +40,7 @@ function getByEmail(email, callback) {
       callback(null, user);
     });
 
-    getMembershipQuery.addParameter('Username', TYPES.VarChar, email);
+    getMembershipQuery.addParameter('Username', TYPES.VarChar, identifierValue);
 
     getMembershipQuery.on('row', function(fields) {
       user = {

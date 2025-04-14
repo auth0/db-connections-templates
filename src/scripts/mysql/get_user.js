@@ -1,4 +1,4 @@
-function getByEmail(email, callback) {
+function getUser(identifierValue, callback) {
   const mysql = require('mysql');
 
   const connection = mysql.createConnection({
@@ -12,7 +12,7 @@ function getByEmail(email, callback) {
 
   const query = 'SELECT id, nickname, email FROM users WHERE email = ?';
 
-  connection.query(query, [ email ], function(err, results) {
+  connection.query(query, [ identifierValue ], function(err, results) {
     if (err || results.length === 0) return callback(err || null);
 
     const user = results[0];
