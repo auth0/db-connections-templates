@@ -1,3 +1,6 @@
+# dbscripts file is generated in CI
+dbscripts.json
+
 # Logs
 logs
 *.log

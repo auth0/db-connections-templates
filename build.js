@@ -25,9 +25,14 @@ const processDirs = (dirs, done) => {
 }
 
 const buildAll = () => {
+  // Clean up existing dbscripts.json file if it exists
+  if (fs.existsSync('./dbscripts.json')) {
+    fs.unlinkSync('./dbscripts.json');
+  }
+  
   fs.readdir('./src/scripts', (err, dirs) => processDirs(dirs, (err, result) => {
     if (err) return console.error(err);
-    fs.appendFile(`./dbscripts.json`, JSON.stringify(result, null, '  '), (e) => console.log(e || 'Completed successfully'));
+    fs.writeFile(`./dbscripts.json`, JSON.stringify(result, null, '  '), (e) => console.log(e || 'Completed successfully'));
   }));
 };
 
