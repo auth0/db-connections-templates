@@ -78,7 +78,7 @@ describe(scriptName, () => {
     row.mockImplementation((callback) => callback({
       UserId: { value: 'uid1' },
       UserName: { value: 'duck.t@example.com' },
-      Password: { value: 'password' }
+      Password: { value: 'AINcmtaNXJGRJblFbwak2MxyDWwzMKx5uK+p/Vq+fJ6XKCuQARaWP6TU31VsHF2+ZA==' }
     }));
 
     const expectedUser = {
