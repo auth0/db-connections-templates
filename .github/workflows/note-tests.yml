@@ -1,0 +1,40 @@
+name: node-tests
+
+# This runs on pushes to the 'master' branch and any pull request.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # --- Build Matrix ---
+    # This creates a parallel job for each Node.js version listed.
+    strategy:
+      matrix:
+        node-version: [12, 16, 18, 22]
+
+    # Name the job dynamically in the UI for clarity
+    name: Node.js ${{ matrix.node-version }} Test
+
+    steps:
+      # 1. Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up the specified Node.js version and cache npm dependencies
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm i
+
+      # 4. Run tests
+      - name: Run Jest tests
+        run: npm run test
