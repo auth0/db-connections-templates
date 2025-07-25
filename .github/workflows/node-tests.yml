@@ -22,11 +22,11 @@ jobs:
     steps:
       # 1. Check out the repository code
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # Latest as of July 2025
 
       # 2. Set up the specified Node.js version and cache npm dependencies
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # Latest as of July 2025
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
