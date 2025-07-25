@@ -1,0 +1,46 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_ROLE: ${{ secrets.awsIAMS3UploadRole }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build dbscripts.json
+        run: npm run build
+
+      - name: Configure AWS Credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1 on 2025-04-30
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          role-session-name: github-db-connections-templates-deploy
+          aws-region: us-west-1
+
+      - name: Deploy to S3
+        run: |
+          aws s3 cp dbscripts.json s3://${{ secrets.S3_BUCKET }}/dbscripts/dbscripts.json \
+            --content-type "application/json" \
+            --cache-control "max-age=3600"

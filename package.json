@@ -4,7 +4,6 @@
   "description": "Auth0 Connection Scripts Repository",
   "main": "./dbscripts.json",
   "scripts": {
-    "prebuild": "rimraf dbscripts.json",
     "build": "node ./build",
     "deploy": "node deploy.js",
     "test": "jest"
@@ -24,7 +23,6 @@
     "aws-sdk": "^2.610.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^6.1.0",
-    "husky": "^1.3.1",
     "jest": "21.2.1",
     "mongodb": "^3.1.4",
     "mysql": "^2.18.1",
@@ -32,11 +30,5 @@
     "request": "^2.88.2",
     "rimraf": "^2.6.2",
     "tedious": "1.11.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run build && git add ./dbscripts.json",
-      "pre-push": "npm test"
-    }
   }
 }
