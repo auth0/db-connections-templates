@@ -6,7 +6,6 @@
   "scripts": {
     "prebuild": "rimraf dbscripts.json",
     "build": "node ./build",
-    "deploy": "node deploy.js",
     "test": "jest"
   },
   "repository": {
@@ -21,9 +20,7 @@
   "homepage": "https://github.com/auth0/db-connections-templates",
   "devDependencies": {
     "async": "^2.6.0",
-    "aws-sdk": "^2.610.0",
     "bcrypt": "^6.0.0",
-    "dotenv": "^6.1.0",
     "husky": "^1.3.1",
     "jest": "21.2.1",
     "mongodb": "^3.1.4",
