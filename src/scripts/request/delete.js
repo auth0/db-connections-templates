@@ -1,5 +1,5 @@
 async function remove(id, callback) {
-  const axios = require('axios@0.22.0');
+  const axios = require('axios@0.32.0');
 
   try {
     await axios.delete(

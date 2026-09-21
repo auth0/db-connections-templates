@@ -1,5 +1,5 @@
 async function verify(email, callback) {
-  const axios = require('axios@0.22.0');
+  const axios = require('axios@0.32.0');
 
   try {
     const response = await axios.put(
