@@ -3,7 +3,10 @@ function changePassword(callback) {
   // This template is used for testing dependencies against a specific Node version
   require('bcrypt');
   require('crypto');
-  require('mongodb').MongoClient;
+  // mongodb@5.x requires Node 14+ (uses nullish coalescing and other ES2020 syntax)
+  if (parseInt(process.version.slice(1)) >= 14) {
+    require('mongodb').MongoClient;
+  }
   require('mysql');
   require('pg');
   require('axios');
