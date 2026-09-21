@@ -1,15 +1,18 @@
-function verify(email, callback) {
-  const request = require('request');
+async function verify(email, callback) {
+  const axios = require('axios@0.22.0');
 
-  request.put({
-    url: 'https://localhost/users',
-    json: { email: email }
-    //for more options check:
-    //https://github.com/mikeal/request#requestoptions-callback
-  }, function(err, response, body) {
-    if (err) return callback(err);
-    if (response.statusCode === 401) return callback();
-
-    callback(null, body);
-  });
+  try {
+    const response = await axios.put(
+      configuration.baseAPIUrl + '/users',
+      { email: email },
+      {
+        timeout: 10000,
+        headers: { 'x-api-key': configuration.apiKey }
+      }
+    );
+    callback(null, response.data);
+  } catch (e) {
+    if (e.response && e.response.status === 401) return callback();
+    return callback(new Error(e.message));
+  }
 }

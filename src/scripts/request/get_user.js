@@ -1,19 +1,22 @@
-function getUser(identifierValue, callback) {
-  const request = require('request');
+async function getUser(identifierValue, callback) {
+  const axios = require('axios@0.22.0');
 
-  request.get({
-    url: 'https://localhost/users-by-email/' + identifierValue
-    //for more options check:
-    //https://github.com/mikeal/request#requestoptions-callback
-  }, function(err, response, body) {
-    if (err) return callback(err);
-
-    const user = JSON.parse(body);
-
+  try {
+    const response = await axios.get(
+      configuration.baseAPIUrl + '/users-by-email/' + identifierValue,
+      {
+        timeout: 10000,
+        headers: { 'x-api-key': configuration.apiKey }
+      }
+    );
+    const user = response.data;
     callback(null, {
       user_id: user.user_id.toString(),
       nickname: user.nickname,
       email: user.email
     });
-  });
+  } catch (e) {
+    if (e.response && e.response.status === 404) return callback(null);
+    return callback(new Error(e.message));
+  }
 }

@@ -1,5 +1,5 @@
 function verify (email, callback) {
-  const sqlserver = require('tedious@1.11.0');
+  const sqlserver = require('tedious@11.0.3');
 
   const Connection = sqlserver.Connection;
   const Request = sqlserver.Request;

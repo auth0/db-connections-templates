@@ -1,14 +1,17 @@
-function create(user, callback) {
-  const request = require('request');
+async function create(user, callback) {
+  const axios = require('axios@0.22.0');
 
-  request.post({
-    url: 'https://localhost/users',
-    json: user
-    //for more options check:
-    //https://github.com/mikeal/request#requestoptions-callback
-  }, function(err, response, body) {
-    if (err) return callback(err);
-
+  try {
+    await axios.post(
+      configuration.baseAPIUrl + '/users',
+      user,
+      {
+        timeout: 10000,
+        headers: { 'x-api-key': configuration.apiKey }
+      }
+    );
     callback(null);
-  });
+  } catch (e) {
+    return callback(new Error(e.message));
+  }
 }
