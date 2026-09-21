@@ -13,7 +13,7 @@ describe(scriptName, () => {
   const sqlserver = fakeSqlServer(request, addParam);
 
   const globals = {};
-  const stubs = { 'tedious@1.11.0': sqlserver };
+  const stubs = { 'tedious@11.0.3': sqlserver };
 
   let script;
 
