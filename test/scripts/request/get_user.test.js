@@ -7,12 +7,10 @@ const scriptName = 'get_user';
 
 describe(scriptName, () => {
   const send = jest.fn();
-  const request = {
-    get: send
-  };
+  const axios = { get: send };
 
-  const globals = {};
-  const stubs = { request };
+  const globals = { configuration: { baseAPIUrl: 'https://localhost', apiKey: 'test-api-key' } };
+  const stubs = { 'axios@0.32.0': axios };
 
   let script;
 
@@ -21,7 +19,7 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
-    send.mockImplementation((options, callback) => callback(new Error('test error')));
+    send.mockRejectedValue(new Error('test error'));
 
     script('broken@example.com', (err) => {
       expect(err).toBeInstanceOf(Error);
@@ -37,9 +35,9 @@ describe(scriptName, () => {
       nickname: 'T-Duck'
     };
 
-    send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://localhost/users-by-email/duck.t@example.com');
-      callback(null, { statusCode: 200 }, JSON.stringify(user));
+    send.mockImplementation((url) => {
+      expect(url).toEqual('https://localhost/users-by-email/duck.t@example.com');
+      return Promise.resolve({ data: user });
     });
 
     script('duck.t@example.com', (err, data) => {
