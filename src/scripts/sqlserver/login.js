@@ -13,7 +13,8 @@ function login(identifierValue, password, callback) {
     password:  'test',
     server:    'localhost',
     options:  {
-      database: 'mydb'
+      database: 'mydb',
+      rowCollectionOnRequestCompletion: true
     }
   });
 
