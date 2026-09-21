@@ -19,7 +19,7 @@ describe(scriptName, () => {
   });
 
   it('should return request error', (done) => {
-    send.mockRejectedValue(new Error('test error'));
+    send.mockImplementation(() => Promise.reject(new Error('test error')));
 
     script({ email: 'broken@example.com', password: 'password' }, (err) => {
       expect(err).toBeInstanceOf(Error);

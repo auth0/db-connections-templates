@@ -30,6 +30,9 @@
     "rimraf": "^2.6.2",
     "tedious": "11.0.3"
   },
+  "jest": {
+    "setupFiles": ["./test/utils/setup.js"]
+  },
   "husky": {
     "hooks": {
       "pre-commit": "npm run build && git add ./dbscripts.json",

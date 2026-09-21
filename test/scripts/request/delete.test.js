@@ -19,7 +19,7 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
-    send.mockRejectedValue(new Error('test error'));
+    send.mockImplementation(() => Promise.reject(new Error('test error')));
 
     script('broken', (err) => {
       expect(err).toBeInstanceOf(Error);

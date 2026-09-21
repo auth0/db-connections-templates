@@ -19,7 +19,7 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
-    send.mockRejectedValue(new Error('test error'));
+    send.mockImplementation(() => Promise.reject(new Error('test error')));
 
     script('broken@example.com', 'password', (err) => {
       expect(err).toBeInstanceOf(Error);
@@ -29,7 +29,7 @@ describe(scriptName, () => {
   });
 
   it('should not throw error on 401', (done) => {
-    send.mockRejectedValue(Object.assign(new Error('Unauthorized'), { response: { status: 401 } }));
+    send.mockImplementation(() => Promise.reject(Object.assign(new Error('Unauthorized'), { response: { status: 401 } })));
 
     script('none@example.com', 'newPassword', (err, data) => {
       expect(err).toBeFalsy();

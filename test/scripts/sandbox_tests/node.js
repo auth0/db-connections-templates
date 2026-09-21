@@ -6,7 +6,7 @@ function changePassword(callback) {
   require('mongodb').MongoClient;
   require('mysql');
   require('pg');
-  require('request');
+  require('axios');
   require('tedious');
   return callback(null, {});
 }
