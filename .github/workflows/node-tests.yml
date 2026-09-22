@@ -35,6 +35,10 @@ jobs:
       - name: Install dependencies
         run: npm i
 
-      # 4. Run tests
+      # 4. Build dbscripts.json
+      - name: Build dbscripts.json
+        run: npm run build
+
+      # 5. Run tests
       - name: Run Jest tests
         run: npm run test
