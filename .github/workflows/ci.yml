@@ -1,10 +1,14 @@
-name: Node Tests
+name: CI
 
 # This runs on pushes to the 'master' branch and any pull request.
 on:
   push:
     branches: [master]
   pull_request:
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   build-and-test:
@@ -46,3 +50,35 @@ jobs:
       # 6. Run tests
       - name: Run Jest tests
         run: npm run test
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to S3
+    needs: build-and-test
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # Latest as of July 2025
+
+      - name: Use Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # Latest as of July 2025
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Build dbscripts.json
+        run: npm run build
+
+      - name: Configure AWS Credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ secrets.awsIAMS3UploadRole }}
+          role-session-name: github-action-db-connections-templates-deploy
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: aws s3 cp ./dbscripts.json s3://${{ secrets.AWS_S3_BUCKET }}/dbscripts.json
