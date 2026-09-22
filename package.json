@@ -4,7 +4,7 @@
   "description": "Auth0 Connection Scripts Repository",
   "main": "./dbscripts.json",
   "scripts": {
-    "prebuild": "rimraf dbscripts.json",
+    "prebuild": "node -e \"require('fs').rmSync('dbscripts.json', {force:true})\"",
     "build": "node ./build",
     "test": "jest"
   },

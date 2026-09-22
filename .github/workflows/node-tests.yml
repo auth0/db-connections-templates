@@ -39,6 +39,10 @@ jobs:
       - name: Build dbscripts.json
         run: npm run build
 
-      # 5. Run tests
+      # 5. Verify the committed dbscripts.json matches the build output
+      - name: Verify dbscripts.json is up to date
+        run: git diff --exit-code dbscripts.json
+
+      # 6. Run tests
       - name: Run Jest tests
         run: npm run test
