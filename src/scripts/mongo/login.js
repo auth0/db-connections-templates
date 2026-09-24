@@ -1,6 +1,6 @@
 function login(identifierValue, password, callback) {
   const bcrypt = require('bcrypt');
-  const MongoClient = require('mongodb@3.1.4').MongoClient;
+  const MongoClient = require('mongodb@5.1.0').MongoClient;
   const client = new MongoClient('mongodb://user:pass@localhost');
 
   client.connect(function (err) {

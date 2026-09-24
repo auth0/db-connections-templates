@@ -1,13 +1,16 @@
-function remove(id, callback) {
-  const request = require('request');
+async function remove(id, callback) {
+  const axios = require('axios@0.32.0');
 
-  request.del({
-    url: 'https://localhost/users/' + id
-    // for more options check:
-    // https://github.com/mikeal/request#requestoptions-callback
-  }, function(err, response, body) {
-    if (err) return callback(err);
-
+  try {
+    await axios.delete(
+      configuration.baseAPIUrl + '/users/' + id,
+      {
+        timeout: 10000,
+        headers: { 'x-api-key': configuration.apiKey }
+      }
+    );
     callback(null);
-  });
+  } catch (e) {
+    return callback(new Error(e.message));
+  }
 }

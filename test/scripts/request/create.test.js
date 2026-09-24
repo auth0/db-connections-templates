@@ -7,12 +7,10 @@ const scriptName = 'create';
 
 describe(scriptName, () => {
   const send = jest.fn();
-  const request = {
-    post: send
-  };
+  const axios = { post: send };
 
-  const globals = {};
-  const stubs = { request };
+  const globals = { configuration: { baseAPIUrl: 'https://localhost', apiKey: 'test-api-key' } };
+  const stubs = { 'axios@0.32.0': axios };
 
   let script;
 
@@ -21,7 +19,7 @@ describe(scriptName, () => {
   });
 
   it('should return request error', (done) => {
-    send.mockImplementation((options, callback) => callback(new Error('test error')));
+    send.mockImplementation(() => Promise.reject(new Error('test error')));
 
     script({ email: 'broken@example.com', password: 'password' }, (err) => {
       expect(err).toBeInstanceOf(Error);
@@ -31,11 +29,11 @@ describe(scriptName, () => {
   });
 
   it('should create user', (done) => {
-    send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://localhost/users');
-      expect(options.json.email).toEqual('duck.t@example.com');
-      expect(options.json.password).toEqual('password');
-      callback(null, { statusCode: 200 }, {});
+    send.mockImplementation((url, data) => {
+      expect(url).toEqual('https://localhost/users');
+      expect(data.email).toEqual('duck.t@example.com');
+      expect(data.password).toEqual('password');
+      return Promise.resolve({ data: {} });
     });
 
     script({ email: 'duck.t@example.com', password: 'password' }, (err) => {
