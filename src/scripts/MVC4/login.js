@@ -1,6 +1,6 @@
-function login(email, password, callback) {
+function login(identifierValue, password, callback) {
   const crypto = require('crypto');
-  const sqlserver = require('tedious@1.11.0');
+  const sqlserver = require('tedious@11.0.3');
 
   const Connection = sqlserver.Connection;
   const Request = sqlserver.Request;
@@ -69,11 +69,11 @@ function login(email, password, callback) {
 
   connection.on('connect', function(err) {
     if (err) return callback(err);
-    getMembershipUser(email, function(err, user) {
-      if (err || !user || !user.profile) return callback(err || new WrongUsernameOrPasswordError(email));
+    getMembershipUser(identifierValue, function(err, user) {
+      if (err || !user || !user.profile) return callback(err || new WrongUsernameOrPasswordError(identifierValue));
 
       validatePassword(password, user.password, function(err, isValid) {
-        if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(email));
+        if (err || !isValid) return callback(err || new WrongUsernameOrPasswordError(identifierValue));
 
         callback(null, user.profile);
       });

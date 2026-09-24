@@ -7,12 +7,10 @@ const scriptName = 'delete';
 
 describe(scriptName, () => {
   const send = jest.fn();
-  const request = {
-    del: send
-  };
+  const axios = { delete: send };
 
-  const globals = {};
-  const stubs = { request };
+  const globals = { configuration: { baseAPIUrl: 'https://localhost', apiKey: 'test-api-key' } };
+  const stubs = { 'axios@0.32.0': axios };
 
   let script;
 
@@ -21,7 +19,7 @@ describe(scriptName, () => {
   });
 
   it('should return database error', (done) => {
-    send.mockImplementation((options, callback) => callback(new Error('test error')));
+    send.mockImplementation(() => Promise.reject(new Error('test error')));
 
     script('broken', (err) => {
       expect(err).toBeInstanceOf(Error);
@@ -31,9 +29,9 @@ describe(scriptName, () => {
   });
 
   it('should remove user', (done) => {
-    send.mockImplementation((options, callback) => {
-      expect(options.url).toEqual('https://localhost/users/uid1');
-      callback(null, { statusCode: 200 }, {});
+    send.mockImplementation((url) => {
+      expect(url).toEqual('https://localhost/users/uid1');
+      return Promise.resolve({ data: {} });
     });
 
     script('uid1', (err) => {

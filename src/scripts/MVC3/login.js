@@ -1,6 +1,6 @@
 function login(identifierValue, password, callback) {
   const crypto = require('crypto');
-  const sqlserver = require('tedious@1.11.0');
+  const sqlserver = require('tedious@11.0.3');
 
   const Connection = sqlserver.Connection;
   const Request = sqlserver.Request;

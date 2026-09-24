@@ -25,7 +25,7 @@ describe(scriptName, () => {
     return this;
   };
   const globals = {};
-  const stubs = { 'mongodb@3.1.4': { MongoClient } };
+  const stubs = { 'mongodb@5.1.0': { MongoClient } };
 
   let script;
 

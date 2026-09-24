@@ -2,7 +2,7 @@ function create(user, callback) {
   //this example uses the "tedious" library
   //more info here: http://pekim.github.io/tedious/index.html
   const bcrypt = require('bcrypt');
-  const sqlserver = require('tedious@1.11.0');
+  const sqlserver = require('tedious@11.0.3');
 
   const Connection = sqlserver.Connection;
   const Request = sqlserver.Request;
