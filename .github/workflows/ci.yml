@@ -3,9 +3,8 @@ name: CI
 # This runs on pushes to the 'master' branch and any pull request.
 on:
   push:
-    branches: [master, feat/automate-dbscripts-build-and-deploy]
+    branches: [master]
   pull_request:
-  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -56,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy to S3
     needs: build-and-test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/feat/automate-dbscripts-build-and-deploy')
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     steps:
       - name: Checkout code
@@ -82,4 +81,4 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to S3
-        run: aws s3 cp ./dbscripts.json s3://${{ secrets.AWS_S3_BUCKET }}/extensibility/dbscripts/dbscripts.json --dryrun
+        run: aws s3 cp ./dbscripts.json s3://${{ secrets.AWS_S3_BUCKET }}/extensibility/dbscripts/dbscripts.json
