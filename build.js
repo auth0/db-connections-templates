@@ -27,7 +27,7 @@ const processDirs = (dirs, done) => {
 const buildAll = () => {
   fs.readdir('./src/scripts', (err, dirs) => processDirs(dirs, (err, result) => {
     if (err) return console.error(err);
-    fs.appendFile(`./dbscripts.json`, JSON.stringify(result, null, '  '), (e) => console.log(e || 'Completed successfully'));
+    fs.writeFile(`./dbscripts.json`, JSON.stringify(result, null, '  '), (e) => console.log(e || 'Completed successfully'));
   }));
 };
 

@@ -4,7 +4,7 @@
   "description": "Auth0 Connection Scripts Repository",
   "main": "./dbscripts.json",
   "scripts": {
-    "prebuild": "rimraf dbscripts.json",
+    "prebuild": "node -e \"try{require('fs').unlinkSync('dbscripts.json')}catch(e){if(e.code!=='ENOENT')throw e}\"",
     "build": "node ./build",
     "test": "jest"
   },
